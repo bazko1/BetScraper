@@ -21,10 +21,11 @@ def match_scraper(url):
     information = BeautifulSoup(str(information), features="html.parser")
     information = information.find('a', {'class': 'openMenu'}).text
     if bets_name[1] == 'X':
-        return information.replace('\n', ''), bets_name[0], bets_name[1], bets_name[2], bets_numbers[0], bets_numbers[
+        return information.replace('\n', '')[-18:-8],information.replace('\n', '')[-5:], bets_name[0], bets_name[1], bets_name[2], bets_numbers[0], bets_numbers[
             1], bets_numbers[2]
     else:
-        return information.replace('\n', ''), bets_name[0], bets_name[1], bets_numbers[0], bets_numbers[1]
+        return information.replace('\n', '')[-18:-8],information.replace('\n', '')[-5:], bets_name[0], bets_name[1], bets_numbers[0], bets_numbers[1]
+
 
 def getData(url):
         out = None
