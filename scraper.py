@@ -26,6 +26,16 @@ def match_scraper(url):
     else:
         return information.replace('\n', ''), bets_name[0], bets_name[1], bets_numbers[0], bets_numbers[1]
 
+def getData(url):
+        out = None
+
+        try :
+                out = match_scraper(url)
+        except Exception as e: 
+                print ( 'failed to get data ', e ) 
+        return out
+
+
 
 # piłka nożna
 #print(match_scraper(
@@ -39,8 +49,7 @@ def match_scraper(url):
 #)
 
 # tenis
-#print(match_scraper(
-#    'https://www.sts.pl/pl/oferta/zaklady-bukmacherskie/zaklady-sportowe/?action=offer&sport=185&region=6609&league=76050&oppty=181052469'))
+#print(match_scraper('https://www.sts.pl/pl/oferta/zaklady-bukmacherskie/zaklady-sportowe/?action=offer&sport=186&region=6484&league=3893&oppty=139108370'))
 # siatkowka
 #print(match_scraper(
  #   'https://www.sts.pl/pl/oferta/zaklady-bukmacherskie/zaklady-sportowe/?action=offer&sport=183&region=6502&league=4142&oppty=175906997'))
