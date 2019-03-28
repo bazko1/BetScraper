@@ -26,24 +26,14 @@ def match_scraper(url):
     else:
         return information.replace('\n', ''), bets_name[0], bets_name[1], bets_numbers[0], bets_numbers[1]
 
+def getData(url):
+        out = None
 
-# piłka nożna
-#print(match_scraper(
+        try :
+                out = match_scraper(url)
+        except Exception as e: 
+                #print ( 'failed to get data ', e ) 
+                out = ('Error',e)
+        return out
 
- #   'https://www.sts.pl/pl/oferta/zaklady-bukmacherskie/zaklady-sportowe/?action=offer&sport=184&region=6480&league=15905&oppty=170415620'))
-# koszykówka
-#print(match_scraper(
-#'https://www.sts.pl/pl/oferta/zaklady-bukmacherskie/zaklady-sportowe/?action=offer&sport=186&region=6484&league=3893&oppty=139108562'
-#'https://www.sts.pl/pl/oferta/zaklady-bukmacherskie/zaklady-sportowe/?action=offer&sport=184&region=6499&league=74171&oppty=180376313'
-#) 
-#)
 
-# tenis
-#print(match_scraper(
-#    'https://www.sts.pl/pl/oferta/zaklady-bukmacherskie/zaklady-sportowe/?action=offer&sport=185&region=6609&league=76050&oppty=181052469'))
-# siatkowka
-#print(match_scraper(
- #   'https://www.sts.pl/pl/oferta/zaklady-bukmacherskie/zaklady-sportowe/?action=offer&sport=183&region=6502&league=4142&oppty=175906997'))
-# hokej
-#print(match_scraper(
-#    'https://www.sts.pl/pl/oferta/zaklady-bukmacherskie/zaklady-sportowe/?action=offer&sport=188&region=6484&league=4077&oppty=140240642'))
