@@ -3,34 +3,35 @@
 
 from __future__ import unicode_literals
 
-
 from PyQt5 import Qt
 from PyQt5 import QtCore
 from PyQt5.QtCore import *
-from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
 
+from database1 import *
 
 class mainWindow(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
-
+        self.setFixedSize(1065,600)
         self.interfejs()
 
     def interfejs(self):
 
-        layout=QVBoxLayout()
+        layoutA=QVBoxLayout()
 
 
     # Napis glowny
         title=QLabel("APLIKACJA BUKMACHERSKA", self)
-        title.setFixedSize(500,40)
+        title.setFixedSize(980,40)
         title.setAlignment(QtCore.Qt.AlignCenter)
 
         font = QFont()
         font.setPointSize(16)
         font.setWeight(80)
         title.setFont(font)
+        layoutA.addWidget(title)
 
         # przyciski
         DodajBtn = QPushButton("Dodaj mecz", self)
@@ -42,24 +43,46 @@ class mainWindow(QWidget):
         koniecBtn.setStyleSheet("font: bold;color: dark blue; background-color: white; border-color: beige")
         koniecBtn.clicked.connect(QApplication.instance().quit)
 
-        # layout.setSpacing(0)
-        layout.addWidget(title)
-        layout.addWidget(DodajBtn)
-        layout.addWidget(koniecBtn)
+        mylabel=QLabel()
+        pixmap=QPixmap("/home/teresa/sts.jpg")
+        mylabel.setPixmap(pixmap)
+        mylabel.setFixedSize(200,150)
+        mylabel.move(900,500)
+
+
+        inputImg = QImage("/home/teresa/sts.jpg")
+        imgDisplayLabel = QLabel()
+        imgDisplayLabel.setPixmap(QPixmap.fromImage(inputImg))
+        imgDisplayLabel.setScaledContents(True)
+        imgDisplayLabel.setFixedSize(200, 150)
+        #imgDisplayLabel.setAlignment(QtCore.Qt.AlignRight)
+
+        btnGroup = QVBoxLayout()
+        btnGroup.addWidget(DodajBtn)
+        btnGroup.addWidget(koniecBtn)
+        btnGroup.setSpacing(0)
+        #btnGroup.setAlignment(QtCore.Qt.AlignLeft)
+
+        gridLayout=QGridLayout()
+        gridLayout.addWidget(imgDisplayLabel, 0,2)
+        gridLayout.addLayout(btnGroup, 0,0)
+        gridLayout.setColumnStretch(1, -2)
+        #gridLayout.setColumnStretch(2,50)
+        layoutA.addLayout(gridLayout)
+
 
         # tabs
         tab_widget = QTabWidget()
         tab_widget.addTab(MyTab(), "Aktualne")
         tab_widget.addTab(MyTab(), "Podejrzane")
         tab_widget.addTab(MyTab(), "Historyczne")
+        layoutA.addWidget(tab_widget)
+
+        #layoutA.addLayout(layoutB)
+        self.setLayout(layoutA)
 
 
-
-        # Add tabs to widget
-        layout.addWidget(tab_widget)
-        self.setLayout(layout)
-
-        self.setGeometry(20, 20, 500, 500)
+        self.setGeometry(20, 20, 850, 600)
         self.setAutoFillBackground(True)
         p = self.palette()
         p.setColor(self.backgroundRole(), QColor(255, 165, 0))
@@ -67,10 +90,131 @@ class mainWindow(QWidget):
         self.setWindowTitle("Aplikacja bukmacherska")
         self.show()
 
+class ResultCell(QWidget):
+
+    def __init__(self):
+        super().__init__()
+        result1=QLineEdit()
+        result2=QLineEdit()
+        colon=QLabel(":")
+        layout3=QHBoxLayout()
+        layout3.addWidget(result1)
+        layout3.addWidget(colon)
+        layout3.addWidget(result2)
+        self.setLayout(layout3)
+        self.setFixedSize(100,40)
+        self.show()
 
 class MyTab(QWidget):
     def __init__(self):
         super().__init__()
+        self.setGeometry(0,0,300,400)
+        self.table_view=QTableView()
+        self.AddTable()
+        layout2=QVBoxLayout()
+        sort_text=QLabel("Sortuj według: ")
+        cb = QComboBox()
+        cb.addItems(["Data dodania zakładu", "Data rozgrywki", "Kwota zakładu"])
+        cb.currentIndexChanged.connect(self.selectionchange)
+        layout2.addWidget(sort_text)
+        layout2.addWidget(cb)
+        layout2.addWidget(self.table_view)
+        self.setLayout(layout2)
+
+    def AddTable(self):
+
+        self.table_view.showFullScreen()
+        self.table_model=MyTableModel()
+        self.table_view.setModel(self.table_model)
+        self.table_view.setMinimumSize(300, 300)
+
+        ile=self.table_model.rowCount(self)
+        for i in range(0, ile):
+            showButton=QPushButton("Pokaż wykres")
+            showButton.setStyleSheet("background-color: beige;border-color: beige")
+            showButton.clicked.connect(Plot)
+            self.table_view.setIndexWidget(self.table_model.index(i, 9), showButton)
+            self.table_view.setIndexWidget(self.table_model.index(i, 8), ResultCell())
+
+    def selectionchange(self, i):
+            if(i==0):
+                print ("Sortuje wg daty wstawienia")
+
+            elif (i==1):
+                print("Sortuje wg daty rozgrywki")
+            elif (i==2):
+                print("Sortuje wg stawek kursów")
+
+
+
+class MyTableModel(QAbstractTableModel):
+
+    def __init__(self):
+        super().__init__()
+        self.mylist=a.get_data()
+
+    def rowCount(self,parent):
+        return len(self.mylist)
+
+    def columnCount(self,parent):
+        return len(self.mylist[0])
+
+
+    def data(self, index, role=QtCore.Qt.DisplayRole):
+        if role == QtCore.Qt.DisplayRole:
+            if index.column()==8:
+                return ""
+            if index.column()==9:
+                return ""
+            return self.mylist[index.row()][index.column()]
+        return None
+
+    def headerData(self, column, orientation, role=QtCore.Qt.DisplayRole):
+        if role != QtCore.Qt.DisplayRole:
+            return QtCore.QVariant()
+        if orientation == QtCore.Qt.Horizontal:
+            if column==0:
+                return QtCore.QVariant('Data')
+            if column==1:
+                return QtCore.QVariant('Godzina')
+            if column==2:
+                return QtCore.QVariant('Drużyna 1')
+            if column==3:
+                return QtCore.QVariant('X')
+            if column==4:
+                return QtCore.QVariant('Drużyna 2')
+            if column==5:
+                return QtCore.QVariant('Wygrana 1')
+            if column==6:
+                return QtCore.QVariant('Remis')
+            if column==7:
+                return QtCore.QVariant('Wygrana 2')
+            if column==8:
+                return QtCore.QVariant('Wynik meczu')
+            if column==9:
+                return QtCore.QVariant('Pokaz wykres')
+
+class Plot(QDialog):
+    def __init__(self):
+        super().__init__()
+        self.dodaj()
+
+    def makePlot(self):
+        print ("Rysuje wykres")
+
+    def dodaj(self):
+        self.setWindowTitle("Wykres kursów")
+        self.setWindowModality(Qt.ApplicationModal)
+
+        self.setAutoFillBackground(True)
+        p = self.palette()
+        p.setColor(self.backgroundRole(), QColor(255, 165, 0))
+        self.setPalette(p)
+        self.makePlot()
+        self.exec()
+
+
+
 
 class AddWindow(QDialog):
     def __init__(self):
@@ -91,8 +235,6 @@ class AddWindow(QDialog):
         layout1 = QVBoxLayout()
         okBtn = QPushButton("DODAJ")
         anulujBtn = QPushButton("ANULUJ")
-        btn1 = QPushButton("btn1")
-        btn2 = QPushButton("btn2")
         self.wpisz1 = QLineEdit()
         self.wpisz2 = QLineEdit()
         tekst1 = QLabel("Podaj link:")
@@ -153,9 +295,9 @@ class AddWindow(QDialog):
 class MessageWindow(QMessageBox):
     def __init__(self, str):
         super().__init__()
-        self.pokaz(str)
+        self.show(str)
 
-    def pokaz(self,str):
+    def show(self,str):
         msg= QMessageBox()
         msg.setWindowTitle("Komunikat")
         if str=="brak":

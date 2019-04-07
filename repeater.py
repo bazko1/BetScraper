@@ -64,11 +64,11 @@ class TimedScraper(Thread):
 d=FakeDatabase()
 t=TimedScraper(d)
 t.add(
-    'https://www.sts.pl/pl/oferta/zaklady-bukmacherskie/zaklady-sportowe/?action=offer&sport=201&region=6582&league=4555&oppty=182940380'
+    'https://www.sts.pl/pl/oferta/zaklady-bukmacherskie/zaklady-sportowe/?action=offer&sport=201&region=6582&league=39316&oppty=183757042'
 ,1)
 t.add('Bet 2 data',1)
 
-t.add('https://www.sts.pl/pl/oferta/zaklady-bukmacherskie/zaklady-sportowe/?action=offer&sport=201&region=6582&league=4555&oppty=182877745' 
+t.add('https://www.sts.pl/pl/oferta/zaklady-bukmacherskie/zaklady-sportowe/?action=offer&sport=201&region=6582&league=39316&oppty=183758900'
 , 2 )
 #t.add('Bet 4 data',4)
 

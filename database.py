@@ -27,7 +27,7 @@ class Database(object):
                                           OddNumber INTEGER NOT NULL 
                                           PRIMARY key (Host,Away,DateOfMatch,OddNumber)
 
-                                         )""")
+                                          )""")
         self.conn.commit()
 
     def insert(self, tup):
