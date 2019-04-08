@@ -43,14 +43,7 @@ class mainWindow(QWidget):
         koniecBtn.setStyleSheet("font: bold;color: dark blue; background-color: white; border-color: beige")
         koniecBtn.clicked.connect(QApplication.instance().quit)
 
-        mylabel=QLabel()
-        pixmap=QPixmap("/home/teresa/sts.jpg")
-        mylabel.setPixmap(pixmap)
-        mylabel.setFixedSize(200,150)
-        mylabel.move(900,500)
-
-
-        inputImg = QImage("/home/teresa/sts.jpg")
+        inputImg = QImage("data/logo.jpeg")
         imgDisplayLabel = QLabel()
         imgDisplayLabel.setPixmap(QPixmap.fromImage(inputImg))
         imgDisplayLabel.setScaledContents(True)
