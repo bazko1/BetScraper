@@ -98,7 +98,7 @@ class Database(object):
         self.conn.close()
 
 tup = ('29.03.2019', '18:00', 'W. Płock', 'X', 'Lubin', 2.40, 3.30, 3.00, 0, 0)
-tup = ('29.04.2019', '19:00', 'A', '', 'Lubin', 2.40, 3.30, 3.00, 0, 0)
+tup1 = ('29.04.2019', '19:00', 'A', '', 'Lubin', 2.40, 3.30, 3.00, 0, 0)
 with Database() as db:
     db.create_table()
     db.insert_data( tup)

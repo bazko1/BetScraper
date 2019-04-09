@@ -9,13 +9,26 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-from database1 import *
+
+from data_source import *
+from data_source_actuall import *
+from data_source_historical import *
+from data_source_suspicious import *
+
+
+def refresh():
+    a.get_data()
+    h.get_data()
+    s.get_data()
+
+
 
 class mainWindow(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setFixedSize(1065,600)
+        self.setFixedSize(950,600)
         self.interfejs()
+
 
     def interfejs(self):
 
@@ -42,33 +55,35 @@ class mainWindow(QWidget):
         koniecBtn.setMaximumWidth(200)
         koniecBtn.setStyleSheet("font: bold;color: dark blue; background-color: white; border-color: beige")
         koniecBtn.clicked.connect(QApplication.instance().quit)
+        OdswiezBtn = QPushButton("Odśwież widok", self)
+        OdswiezBtn.setMaximumWidth(200)
+        OdswiezBtn.setStyleSheet("font: bold; color: dark blue; background-color: white; border-color: beige")
+        OdswiezBtn.clicked.connect(refresh)
 
         inputImg = QImage("data/logo.jpeg")
         imgDisplayLabel = QLabel()
         imgDisplayLabel.setPixmap(QPixmap.fromImage(inputImg))
         imgDisplayLabel.setScaledContents(True)
         imgDisplayLabel.setFixedSize(200, 150)
-        #imgDisplayLabel.setAlignment(QtCore.Qt.AlignRight)
 
         btnGroup = QVBoxLayout()
         btnGroup.addWidget(DodajBtn)
+        btnGroup.addWidget(OdswiezBtn)
         btnGroup.addWidget(koniecBtn)
         btnGroup.setSpacing(0)
-        #btnGroup.setAlignment(QtCore.Qt.AlignLeft)
 
         gridLayout=QGridLayout()
         gridLayout.addWidget(imgDisplayLabel, 0,2)
         gridLayout.addLayout(btnGroup, 0,0)
         gridLayout.setColumnStretch(1, -2)
-        #gridLayout.setColumnStretch(2,50)
         layoutA.addLayout(gridLayout)
 
 
         # tabs
         tab_widget = QTabWidget()
-        tab_widget.addTab(MyTab(), "Aktualne")
-        tab_widget.addTab(MyTab(), "Podejrzane")
-        tab_widget.addTab(MyTab(), "Historyczne")
+        tab_widget.addTab(MyTab("Aktualne"), "Aktualne")
+        tab_widget.addTab(MyTab( "Podejrzane"), "Podejrzane")
+        tab_widget.addTab(MyTab("Historyczne"), "Historyczne")
         layoutA.addWidget(tab_widget)
 
         #layoutA.addLayout(layoutB)
@@ -83,27 +98,52 @@ class mainWindow(QWidget):
         self.setWindowTitle("Aplikacja bukmacherska")
         self.show()
 
+
+
 class ResultCell(QWidget):
 
-    def __init__(self):
+    def __init__(self, i):
         super().__init__()
-        result1=QLineEdit()
-        result2=QLineEdit()
+        self.index=i
+        self.result1=QLineEdit()
+        self.result2=QLineEdit()
         colon=QLabel(":")
+        self.result1.setMaxLength(4)
+        self.result1.setValidator(QIntValidator(0, 1000))
+        self.result2.setMaxLength(4)
+        self.result2.setValidator(QIntValidator(0, 1000))
+        self.result2.returnPressed.connect(self.onPressed)
+        self.result1.returnPressed.connect(self.onPressed)
         layout3=QHBoxLayout()
-        layout3.addWidget(result1)
+        layout3.addWidget(self.result1)
         layout3.addWidget(colon)
-        layout3.addWidget(result2)
+        layout3.addWidget(self.result2)
         self.setLayout(layout3)
         self.setFixedSize(100,40)
         self.show()
 
+    def onPressed(self):
+        if (self.result1.text()==""):
+            SmallMessageWindow("brak")
+            print("pierwszy brak")
+            return
+        if (self.result2.text()==""):
+            SmallMessageWindow("brak")
+            print("drugi brak")
+            return
+        else:
+            SmallMessageWindow("ok")
+            result=[self.index, self.result1.text(), self.result2.text()]
+            print (result)
+            return result
+
+
 class MyTab(QWidget):
-    def __init__(self):
+    def __init__(self, name):
         super().__init__()
-        self.setGeometry(0,0,300,400)
+        self.setWindowTitle(name)
         self.table_view=QTableView()
-        self.AddTable()
+        self.AddTable(name)
         layout2=QVBoxLayout()
         sort_text=QLabel("Sortuj według: ")
         cb = QComboBox()
@@ -114,25 +154,23 @@ class MyTab(QWidget):
         layout2.addWidget(self.table_view)
         self.setLayout(layout2)
 
-    def AddTable(self):
+    def AddTable(self, name):
 
-        self.table_view.showFullScreen()
-        self.table_model=MyTableModel()
+        self.table_model=MyTableModel(name)
         self.table_view.setModel(self.table_model)
-        self.table_view.setMinimumSize(300, 300)
+        #self.table_view.setMinimumSize(300, 300)
 
         ile=self.table_model.rowCount(self)
         for i in range(0, ile):
             showButton=QPushButton("Pokaż wykres")
             showButton.setStyleSheet("background-color: beige;border-color: beige")
             showButton.clicked.connect(Plot)
-            self.table_view.setIndexWidget(self.table_model.index(i, 9), showButton)
-            self.table_view.setIndexWidget(self.table_model.index(i, 8), ResultCell())
+            self.table_view.setIndexWidget(self.table_model.index(i, 8), showButton)
+            self.table_view.setIndexWidget(self.table_model.index(i, 7), ResultCell(i))
 
     def selectionchange(self, i):
             if(i==0):
                 print ("Sortuje wg daty wstawienia")
-
             elif (i==1):
                 print("Sortuje wg daty rozgrywki")
             elif (i==2):
@@ -142,23 +180,32 @@ class MyTab(QWidget):
 
 class MyTableModel(QAbstractTableModel):
 
-    def __init__(self):
+    def __init__(self, name):
         super().__init__()
-        self.mylist=a.get_data()
+        if (name=="Aktualne"):
+            self.mylist=a.get_data()
+        if (name=="Historyczne"):
+            self.mylist=h.get_data()
+        if (name=="Podejrzane"):
+            self.mylist=s.get_data()
 
     def rowCount(self,parent):
         return len(self.mylist)
 
     def columnCount(self,parent):
-        return len(self.mylist[0])
+        return len(self.mylist[0])-3
 
 
     def data(self, index, role=QtCore.Qt.DisplayRole):
         if role == QtCore.Qt.DisplayRole:
+            if index.column()==7:
+                return ""
             if index.column()==8:
                 return ""
-            if index.column()==9:
-                return ""
+            if index.column() == 5:
+                return self.mylist[index.row()][6]
+            if index.column() == 6:
+                return self.mylist[index.row()][5]
             return self.mylist[index.row()][index.column()]
         return None
 
@@ -173,18 +220,16 @@ class MyTableModel(QAbstractTableModel):
             if column==2:
                 return QtCore.QVariant('Drużyna 1')
             if column==3:
-                return QtCore.QVariant('X')
-            if column==4:
                 return QtCore.QVariant('Drużyna 2')
-            if column==5:
+            if column==4:
                 return QtCore.QVariant('Wygrana 1')
+            if column==5:
+                return QtCore.QVariant('X')
             if column==6:
-                return QtCore.QVariant('Remis')
-            if column==7:
                 return QtCore.QVariant('Wygrana 2')
-            if column==8:
+            if column==7:
                 return QtCore.QVariant('Wynik meczu')
-            if column==9:
+            if column==8:
                 return QtCore.QVariant('Pokaz wykres')
 
 class Plot(QDialog):
@@ -311,9 +356,33 @@ class MessageWindow(QMessageBox):
             msg.setStandardButtons(QMessageBox.Ok)
             msg.exec()
 
+class SmallMessageWindow(QMessageBox):
+    def __init__(self, str):
+        super().__init__()
+        self.show(str)
+
+    def show(self,str):
+        msg= QMessageBox()
+        msg.setWindowTitle("Komunikat")
+        if str=="brak":
+            msg.setIcon(QMessageBox.Critical)
+            msg.setText("Uzupełnij wszystkie pola")
+            msg.setInformativeText("Wynik nie został zapisany")
+            msg.setStandardButtons(QMessageBox.Ok)
+            msg.exec()
+        if str=="ok":
+            msg.setIcon(QMessageBox.Information)
+            msg.setText("Wynik został zapisany")
+            msg.setStandardButtons(QMessageBox.Ok)
+            msg.exec()
+
+
 if __name__ == '__main__':
     import sys
 
     app = QApplication(sys.argv)
+    a = DataSourceActuall()
+    h = DataSourceHistorical()
+    s = DataSourceSuspicious()
     okno = mainWindow()
     sys.exit(app.exec_())
