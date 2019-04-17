@@ -22,7 +22,7 @@ class DataSource(object):
                                           OddNumber INTEGER NOT NULL ,
                                           ResultHost NULL,
                                           ResultAway NULL,
-                                          PRIMARY KEY (Host,Away,DateOfMatch,OddNumber)
+                                          PRIMARY KEY (Host,Away,DateOfMatch,TimeOfBegin, OddNumber)
 
                                          )""")
         self.conn.commit()
@@ -46,6 +46,10 @@ class DataSource(object):
                            (date, tup[1], tup[2], tup[3], tup[4], tup[5], None, 1, 0, number, None, None))
         self.conn.commit()
 
+    def insert_result(self, tup):
+        self.c.execute('UPDATE Odds SET ResultHost=?, ResultAway=? WHERE DateOfMatch=? and Host=? and Away=?',
+                       (tup[3],tup[4],tup[0],tup[1], tup[2]))
+        self.conn.commit()
     '''zwrocenie danych'''
     def get_data(self):
         self.c.execute('SELECT * FROM Odds')
@@ -63,7 +67,19 @@ class DataSource(object):
         self.c.execute('SELECT * FROM Odds WHERE DateOfMatch=? and Host=? and Away=? ORDER BY OddNumber DESC ',
                        (date, host, away))
         self.conn.commit()
-        return self.c.fetchall()[0]
+        return (self.c.fetchall()[0])
     '''usuneicie danych z parametrem'''
     def delete_specific_data(self, host, away, date):
         self.c.execute('DELETE FROM Odds WHERE DateOfMatch=? and Host=? and Away=?', (date, host, away))
+
+    def get_data_just_names_and_dates(self):
+        self.c.execute('SELECT Host, Away, DateOfMatch, TimeOfBegin FROM Odds WHERE OddNumber=0')
+        return self.c.fetchall()
+
+    def get_data_just_names_and_dates_sort_by_date(self):
+        self.c.execute('SELECT Host, Away, DateOfMatch, TimeOfBegin FROM Odds WHERE OddNumber=0 ORDER BY DateOfMatch DESC TimeOfBegin ASC')
+        return self.c.fetchall()
+
+    def get_data_just_names_and_dates_sort_by_price(self):
+        self.c.execute('SELECT Host, Away, DateOfMatch, TimeOfBegin FROM Odds WHERE OddNumber=0 ORDER BY Max(OddForHost, OddForAway, OddForDraw), TimeOfBegin DESC')
+        return self.c.fetchall()

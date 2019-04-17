@@ -16,10 +16,50 @@ from data_source_historical import *
 from data_source_suspicious import *
 
 
-def refresh():
-    a.get_data()
-    h.get_data()
-    s.get_data()
+def getData(data):
+    list1=data.get_data_just_names_and_dates()
+    listToShow=[]
+    for i in list1:
+            tmp=data.get_parametr_data_new(i[0], i[1], i[2])
+            listToShow.append(tmp)
+    return listToShow
+
+
+def sortByDate(data):
+    list1=data.get_data_just_names_and_dates_sort_by_date()
+    listToShow=[]
+    for i in list1:
+        tmp = data.get_parametr_data_new(i[0], i[1], i[2])
+        listToShow.append(tmp)
+    return listToShow
+
+def sortByPrice(data):
+    list1=data.get_data_just_names_and_dates()
+    listToShow=[]
+    for i in list1:
+            tmp = data.get_parametr_data_new(i[0], i[1], i[2])
+
+            k=0
+            for j in listToShow:
+                print (j)
+                if j[6]!=None and tmp[6]!=None:#gdy mozliwe remisy
+                    if max(j[4], j[5],j[6]) < max(tmp[4], tmp[5],tmp[6]):
+                        break
+                elif j[6]==None and tmp[6]==None:
+                    if max(j[4], j[5]) < max(tmp[4], tmp[5]):
+                        break
+                elif j[6]==None:
+                    if max(j[4], j[5]) < max(tmp[4], tmp[5], tmp[6]):
+                        break
+                else:
+                    if max(j[4], j[5], j[6]) < max(tmp[4], tmp[5]):
+                        break
+                k=k+1
+            listToShow.insert(k,tmp)
+    return listToShow
+
+
+
 
 
 
@@ -58,7 +98,7 @@ class mainWindow(QWidget):
         OdswiezBtn = QPushButton("Odśwież widok", self)
         OdswiezBtn.setMaximumWidth(200)
         OdswiezBtn.setStyleSheet("font: bold; color: dark blue; background-color: white; border-color: beige")
-        OdswiezBtn.clicked.connect(refresh)
+        OdswiezBtn.clicked.connect(self.refresh)
 
         inputImg = QImage("data/logo.jpeg")
         imgDisplayLabel = QLabel()
@@ -78,14 +118,14 @@ class mainWindow(QWidget):
         gridLayout.setColumnStretch(1, -2)
         layoutA.addLayout(gridLayout)
 
-
-        # tabs
         tab_widget = QTabWidget()
-        tab_widget.addTab(MyTab("Aktualne"), "Aktualne")
-        tab_widget.addTab(MyTab( "Podejrzane"), "Podejrzane")
-        tab_widget.addTab(MyTab("Historyczne"), "Historyczne")
-        layoutA.addWidget(tab_widget)
-
+        self.actual=MyTab("Aktualne")
+        self.historical=MyTab("Historyczne")
+        self.suspicious=MyTab("Podejrzane")
+        tab_widget.addTab(self.actual, "Aktualne")
+        tab_widget.addTab(self.suspicious, "Podejrzane")
+        tab_widget.addTab(self.historical, "Historyczne")
+        layoutA.addWidget( tab_widget)
         #layoutA.addLayout(layoutB)
         self.setLayout(layoutA)
 
@@ -98,13 +138,20 @@ class mainWindow(QWidget):
         self.setWindowTitle("Aplikacja bukmacherska")
         self.show()
 
+    def refresh(self):
+        self.actual.table_model.selectionchange(0)
+        self.suspicious.table_model.selectionchange(0)
+        self.historical.table_model.selectionchange(0)
+
 
 
 class ResultCell(QWidget):
 
-    def __init__(self, i):
+    def __init__(self, table, i, name):
         super().__init__()
         self.index=i
+        self.table=table
+        self.name=name
         self.result1=QLineEdit()
         self.result2=QLineEdit()
         colon=QLabel(":")
@@ -125,75 +172,76 @@ class ResultCell(QWidget):
     def onPressed(self):
         if (self.result1.text()==""):
             SmallMessageWindow("brak")
-            print("pierwszy brak")
+
             return
         if (self.result2.text()==""):
             SmallMessageWindow("brak")
-            print("drugi brak")
             return
         else:
             SmallMessageWindow("ok")
-            result=[self.index, self.result1.text(), self.result2.text()]
-            print (result)
-            return result
-
+            result = (self.table.mylist[self.index][0], self.table.mylist[self.index][2], self.table.mylist[self.index][3], self.result1.text(), self.result2.text())
+            if self.name=="a":
+                a.insert_result(result)
+            if self.name=="h":
+                h.insert_result(result)
+            if self.name=="s":
+                s.insert_result(result)
 
 class MyTab(QWidget):
     def __init__(self, name):
         super().__init__()
         self.setWindowTitle(name)
         self.table_view=QTableView()
-        self.AddTable(name)
+        self.table=self.AddTable(name)
         layout2=QVBoxLayout()
         sort_text=QLabel("Sortuj według: ")
         cb = QComboBox()
         cb.addItems(["Data dodania zakładu", "Data rozgrywki", "Kwota zakładu"])
-        cb.currentIndexChanged.connect(self.selectionchange)
+        cb.currentIndexChanged.connect(self.table_model.selectionchange)
         layout2.addWidget(sort_text)
         layout2.addWidget(cb)
         layout2.addWidget(self.table_view)
         self.setLayout(layout2)
 
     def AddTable(self, name):
-
-        self.table_model=MyTableModel(name)
+        self.table_model=MyTableModel(name, self)
         self.table_view.setModel(self.table_model)
+        self.AddColumn7_8()
         #self.table_view.setMinimumSize(300, 300)
 
+    def AddColumn7_8(self):
         ile=self.table_model.rowCount(self)
         for i in range(0, ile):
             showButton=QPushButton("Pokaż wykres")
             showButton.setStyleSheet("background-color: beige;border-color: beige")
             showButton.clicked.connect(Plot)
             self.table_view.setIndexWidget(self.table_model.index(i, 8), showButton)
-            self.table_view.setIndexWidget(self.table_model.index(i, 7), ResultCell(i))
-
-    def selectionchange(self, i):
-            if(i==0):
-                print ("Sortuje wg daty wstawienia")
-            elif (i==1):
-                print("Sortuje wg daty rozgrywki")
-            elif (i==2):
-                print("Sortuje wg stawek kursów")
+            self.table_view.setIndexWidget(self.table_model.index(i, 7), ResultCell(self.table_model, i, self.table_model.name))
 
 
 
 class MyTableModel(QAbstractTableModel):
 
-    def __init__(self, name):
+    def __init__(self, name, parent):
         super().__init__()
+        self.mylist=[]
+        self.parent=parent
+        self.name=""
         if (name=="Aktualne"):
-            self.mylist=a.get_data()
+            self.name="a"
+            self.mylist=getData(a)
         if (name=="Historyczne"):
-            self.mylist=h.get_data()
+            self.name="h"
+            self.mylist=getData(h)
         if (name=="Podejrzane"):
-            self.mylist=s.get_data()
+            self.name="s"
+            self.mylist=getData(s)
 
     def rowCount(self,parent):
         return len(self.mylist)
 
     def columnCount(self,parent):
-        return len(self.mylist[0])-3
+        return 9
 
 
     def data(self, index, role=QtCore.Qt.DisplayRole):
@@ -231,6 +279,34 @@ class MyTableModel(QAbstractTableModel):
                 return QtCore.QVariant('Wynik meczu')
             if column==8:
                 return QtCore.QVariant('Pokaz wykres')
+
+    def selectionchange(self, i):
+            self.beginResetModel()
+            self.mylist=[]
+            self.endResetModel()
+            if (i == 0):
+                if self.name=="a":
+                    self.mylist=getData(a)
+                if self.name == "h":
+                    self.mylist=getData(h)
+                if self.name == "s":
+                    self.mylist=getData(s)
+            if (i == 1):
+                if self.name == "a":
+                    self.mylist = sortByDate(a)
+                if self.name == "h":
+                    self.mylist = sortByDate(h)
+                if self.name == "s":
+                    self.mylist = sortByDate(s)
+            if (i == 2):
+                if self.name == "a":
+                    self.mylist = sortByPrice(a)
+                if self.name == "h":
+                        self.mylist = sortByPrice(h)
+                if self.name == "s":
+                    self.mylist = sortByPrice(s)
+            self.parent.AddColumn7_8()
+
 
 class Plot(QDialog):
     def __init__(self):

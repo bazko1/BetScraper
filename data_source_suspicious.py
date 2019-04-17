@@ -8,21 +8,20 @@ class DataSourceSuspicious(DataSource):
 
     def create_table(self):
         self.c.execute("""CREATE TABLE IF NOT EXISTS Odds (
-                                          DateOfMatch  Date NOT NULL ,
-                                          TimeOfBegin TIME NOT NULL ,
-                                          Host VARCHAR NOT NULL ,
-                                          Away VARCHAR NOT NULL ,
-                                          OddForHost FLOAT NOT NULL ,
-                                          OddForAway FLOAT NOT NULL ,
-                                          OddForDraw FLOAT  NULL ,
-                                          IsActual INTEGER NOT NULL ,
-                                          IsSuspectOdd INTEGER NOT NULL ,
-                                          OddNumber INTEGER NOT NULL ,
-                                          ResultHost NULL,
-                                          ResultAway NULL,
-                                          PRIMARY KEY (Host,Away,DateOfMatch,OddNumber)
-
-                                         )""")
+                                              DateOfMatch  Date NOT NULL ,
+                                              TimeOfBegin TIME NOT NULL ,
+                                              Host VARCHAR NOT NULL ,
+                                              Away VARCHAR NOT NULL ,
+                                              OddForHost FLOAT NOT NULL ,
+                                              OddForAway FLOAT NOT NULL ,
+                                              OddForDraw FLOAT  NULL ,
+                                              IsActual INTEGER NOT NULL ,
+                                              IsSuspectOdd INTEGER NOT NULL ,
+                                              OddNumber INTEGER NOT NULL ,
+                                              ResultHost NULL,
+                                              ResultAway NULL,
+                                              PRIMARY KEY (Host,Away,DateOfMatch,OddNumber)
+                                             )""")
         self.conn.commit()
 
     def get_len_specific_data(self, host, away, date):
@@ -31,8 +30,8 @@ class DataSourceSuspicious(DataSource):
         self.conn.commit()
         return len(self.c.fetchall())
 
-    def insert_data(self,host,away,date):
-        self.c.execute('UPDATE Odds SET IsSuspectOdd=1 WHERE Host=? and Away=? and DateOfMatch=? ',(host,away,date))
+    def insert_data(self, host, away, date):
+        self.c.execute('UPDATE Odds SET IsSuspectOdd=1 WHERE Host=? and Away=? and DateOfMatch=? ', (host, away, date))
         self.conn.commit()
 
     def get_data(self):
@@ -57,3 +56,15 @@ class DataSourceSuspicious(DataSource):
     def delete_specific_data(self, host, away, date):
         self.c.execute('DELETE FROM Odds WHERE DateOfMatch=? AND Host=? AND Away=? AND IsSuspectOdd=1',
                        (date, host, away))
+
+    def get_data_just_names_and_dates(self):
+        self.c.execute('SELECT Host, Away, DateOfMatch, TimeOfBegin FROM Odds WHERE IsSuspectOdd=1 and OddNumber=0')
+        return self.c.fetchall()
+
+    def get_data_just_names_and_dates_sort_by_date(self):
+        self.c.execute('SELECT Host, Away, DateOfMatch, TimeOfBegin FROM Odds WHERE IsSuspectOdd=1 and OddNumber=0 ORDER BY DateOfMatch DESC, TimeOfBegin ASC')
+        return self.c.fetchall()
+
+    def get_data_just_names_and_dates_sort_by_price(self):
+        self.c.execute('SELECT Host, Away, DateOfMatch, TimeOfBegin FROM Odds WHERE IsSuspectOdd=1 and OddNumber=0 ORDER BY Max(OddForHost, OddForAway, OddForDraw), TimeOfBegin DESC')
+        return self.c.fetchall()
