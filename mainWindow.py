@@ -14,7 +14,7 @@ from data_source import *
 from data_source_actuall import *
 from data_source_historical import *
 from data_source_suspicious import *
-
+import re
 
 def getData(data):
     list1=data.get_data_just_names_and_dates()
@@ -371,40 +371,18 @@ class AddWindow(QDialog):
         b=self.wpisz2.text()
         if a=="" or b=="":
             MessageWindow("brak")
-        elif self.check(b)==False:
+        elif not self.checkTime(b):
             MessageWindow("czas")
         else:
             MessageWindow("ok")
             print(self.wpisz1.text() + '   ' +self.wpisz2.text())
             self.close()
 
-    def check(self, b):
-        #trzy znaki
-        if len(b)<1 or len(b)>3:
-            return False
-        #pierwszy znak miedzy 1 a 9
-        if ord(b[0])<49 or ord(b[0])>57:
-            return False
-        #liczba jednocyfrowa, musi byc miedzy 2 a 9
-        if b[0]==1 and len(b)==1:
-            return False
-        #liczba dwucyfrowa,
-        if len(b)==2:
-            if (ord(b[1])<48 or ord(b[1])>57):
-                return False
-        #liczba trzycyfrowa, musi miec pierwsza cyfre 1
-        if len(b)==3:
-            if b[0]!="1":
-                return False
-        #liczba trzycyfrowa gdy najpierw jedynka, sprawdzenie drugiej cyfry
-            if b[1]!="1" and b[1]!="0" and b[1]!="2":
-                return False
-        #liczba trzycyfrowa 120
-            if b[1] == "2" and b[2] != "0":
-                return False
-            if (b[1] == "0" or b[1] == "1") and (ord(b[2]) < 48 or ord(b[2]) > 57):
-                return False
-        return True
+    "Regexpr: onedigit or twodigts or three less than 120 or 120"
+    def checkTime(self, b):
+        
+        return re.match("(^[2-9]$)|(^\d\d$)|(^1[0-1]\d$)|(^120$)", str(b) )
+        
 
 class MessageWindow(QMessageBox):
     def __init__(self, str):
