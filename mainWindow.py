@@ -11,7 +11,7 @@ from PyQt5.QtWidgets import *
 
 
 from data_source import *
-from data_source_actuall import *
+#from data_source_actuall import *
 from data_source_historical import *
 from data_source_suspicious import *
 import re
@@ -65,9 +65,10 @@ def sortByPrice(data):
 
 
 class mainWindow(QWidget):
+    th = TimedScraper()
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.th = TimedScraper()
+        
         self.setFixedSize(950,600)
         self.interfejs()
 
@@ -234,13 +235,13 @@ class MyTableModel(QAbstractTableModel):
         
         if (name=="Aktualne"):
             self.name="a"
-            self.mylist=getData(a)
+            self.mylist=getData(mainWindow.th.database)
         if (name=="Historyczne"):
             self.name="h"
-            self.mylist=getData(h)
+            self.mylist=getData(mainWindow.th.h)
         if (name=="Podejrzane"):
             self.name="s"
-            self.mylist=getData(s)
+            self.mylist=getData(mainWindow.th.s)
 
     def rowCount(self,parent):
         return len(self.mylist)
@@ -291,11 +292,11 @@ class MyTableModel(QAbstractTableModel):
             self.endResetModel()
             if (i == 0):
                 if self.name=="a":
-                    self.mylist=getData(a)
+                    self.mylist=getData(mainWindow.th.database)
                 if self.name == "h":
-                    self.mylist=getData(h)
+                    self.mylist=getData(mainWindow.th.h)
                 if self.name == "s":
-                    self.mylist=getData(s)
+                    self.mylist=getData(mainWindow.th.s)
             if (i == 1):
                 if self.name == "a":
                     self.mylist = sortByDate(a)
@@ -390,7 +391,7 @@ class AddWindow(QDialog):
     "Regexpr: onedigit or twodigts or three less than 120 or 120"
     def checkTime(self, b):
         #allowed 1 min for testing
-        return  b.isdigit() and 121 > int(b) > 0
+        return  b.isdigit() and 121 > int(b) > 1
         
 
 class MessageWindow(QMessageBox):
@@ -444,9 +445,9 @@ if __name__ == '__main__':
     import sys
 
     app = QApplication(sys.argv)
-    a = DataSourceActuall()
-    h = DataSourceHistorical()
-    s = DataSourceSuspicious()
+    #a = DataSourceActuall()
+    #h = DataSourceHistorical()
+    #s = DataSourceSuspicious()
     okno = mainWindow()
     sys.exit(app.exec_())
     

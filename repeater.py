@@ -3,7 +3,8 @@ from threading import Thread
 import time
 import os
 from data_source_actuall import DataSourceActuall
-
+from data_source_historical import DataSourceHistorical
+from data_source_suspicious import DataSourceSuspicious
         
 
 class TimedScraper(Thread):
@@ -19,12 +20,15 @@ class TimedScraper(Thread):
     def __init__(self,observer=None):
         Thread.__init__(self,daemon=True)
         self.database = DataSourceActuall()
+        self.h = DataSourceHistorical()
+        self.s = DataSourceSuspicious()
 
     '''Main runner waits time specified in unitSec and calls update function'''
     def run(self):
         while self._shouldRun:
             time.sleep(self.unitSec)
             self.updateM()
+            
 
     def updateM(self):
         push=[]
@@ -51,9 +55,3 @@ class TimedScraper(Thread):
         for d in data:
             self.database.insert_data(d)
 
-
-
-
-
-
-    

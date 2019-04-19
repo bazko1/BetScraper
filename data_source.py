@@ -4,7 +4,7 @@ import sqlite3
 class DataSource(object):
     '''inicjalizacja kursora'''
     def __init__(self):
-        self.conn = sqlite3.connect('sts')
+        self.conn = sqlite3.connect('sts',check_same_thread=False)
         self.c = self.conn.cursor()
         self.create_table()
     '''stworzenie tabeli'''
