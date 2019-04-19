@@ -15,6 +15,7 @@ from data_source_actuall import *
 from data_source_historical import *
 from data_source_suspicious import *
 import re
+from repeater import TimedScraper
 
 def getData(data):
     list1=data.get_data_just_names_and_dates()
@@ -66,9 +67,12 @@ def sortByPrice(data):
 class mainWindow(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.th = TimedScraper()
         self.setFixedSize(950,600)
         self.interfejs()
 
+    def addCall(self):
+        AddWindow(self)
 
     def interfejs(self):
 
@@ -90,7 +94,7 @@ class mainWindow(QWidget):
         DodajBtn = QPushButton("Dodaj mecz", self)
         DodajBtn.setMaximumWidth(200)
         DodajBtn.setStyleSheet("font: bold; color: dark blue; background-color: white; border-color: beige")
-        DodajBtn.clicked.connect(AddWindow)
+        DodajBtn.clicked.connect(self.addCall)
         koniecBtn = QPushButton("Zakończ", self)
         koniecBtn.setMaximumWidth(200)
         koniecBtn.setStyleSheet("font: bold;color: dark blue; background-color: white; border-color: beige")
@@ -227,6 +231,7 @@ class MyTableModel(QAbstractTableModel):
         self.mylist=[]
         self.parent=parent
         self.name=""
+        
         if (name=="Aktualne"):
             self.name="a"
             self.mylist=getData(a)
@@ -331,11 +336,12 @@ class Plot(QDialog):
 
 
 class AddWindow(QDialog):
-    def __init__(self):
+    def __init__(self,upperWindow):
         super().__init__()
-        self.dodaj()
-
-    def dodaj(self):
+        self.upperWindow = upperWindow
+        self.dodajView()
+        
+    def dodajView(self):
 
 
         self.setWindowTitle("Dodaj zakład")
@@ -375,13 +381,16 @@ class AddWindow(QDialog):
             MessageWindow("czas")
         else:
             MessageWindow("ok")
-            print(self.wpisz1.text() + '   ' +self.wpisz2.text())
+            url=re.sub('\'','',self.wpisz1.text())
+            interval = int(self.wpisz2.text())
+            self.upperWindow.th.addM( url , interval  )
+            
             self.close()
 
     "Regexpr: onedigit or twodigts or three less than 120 or 120"
     def checkTime(self, b):
-        
-        return re.match("(^[2-9]$)|(^\d\d$)|(^1[0-1]\d$)|(^120$)", str(b) )
+        #allowed 1 min for testing
+        return  b.isdigit() and 121 > int(b) > 0
         
 
 class MessageWindow(QMessageBox):
@@ -440,3 +449,4 @@ if __name__ == '__main__':
     s = DataSourceSuspicious()
     okno = mainWindow()
     sys.exit(app.exec_())
+    

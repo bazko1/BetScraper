@@ -2,15 +2,9 @@ import scraper
 from threading import Thread
 import time
 import os
-os.environ['TZ'] = 'utc'
-class FakeDatabase():
+from data_source_actuall import DataSourceActuall
 
-    def notify(self,data):
-        print('FakeDatabase (or gui) adding new data : ')
-        for d in data:
-            print(d)
-        print()
-        #self.data.append( data )
+        
 
 class TimedScraper(Thread):
 
@@ -24,18 +18,15 @@ class TimedScraper(Thread):
     
     def __init__(self,observer=None):
         Thread.__init__(self,daemon=True)
-        self.observer=observer
-        #self.start()
-        
+        self.database = DataSourceActuall()
 
+    '''Main runner waits time specified in unitSec and calls update function'''
     def run(self):
         while self._shouldRun:
-            print('sleep for 60 sec, currTime : ',time.strftime("%H:%M",time.gmtime()) )
             time.sleep(self.unitSec)
-            self.update()
+            self.updateM()
 
-    def update(self):
-        print('update')
+    def updateM(self):
         push=[]
         for bet in self.bets:
             bet[2]+=self.unitMin
@@ -44,36 +35,25 @@ class TimedScraper(Thread):
                 push.append( scraper.getData( bet[0] ) )                
 
         if len(push) > 0 :
-            self.observer.notify(push)
+            self.notifyM(push)
         pass
 
     
-    def add(self,url,interval):
-        self.observer.notify( [scraper.getData( url )] )
-        #self.observer.notify( url )
+    def addM(self,url,interval):
+        self.notifyM( [scraper.getData( url )] )
         self.bets.append( [url , interval , 0 ] )
         if len(self.bets) == 1:
             self.start()
         pass
 
 
+    def notifyM(self,data):
+        for d in data:
+            self.database.insert_data(d)
 
-    def stop(self):
-        self._shouldRun = False
 
-d=FakeDatabase()
-t=TimedScraper(d)
-t.add(
-    'https://www.sts.pl/pl/oferta/zaklady-bukmacherskie/zaklady-sportowe/?action=offer&sport=201&region=6582&league=39316&oppty=183757042'
-,1)
-t.add('Bet 2 data',1)
 
-t.add('https://www.sts.pl/pl/oferta/zaklady-bukmacherskie/zaklady-sportowe/?action=offer&sport=201&region=6582&league=39316&oppty=183758900'
-, 2 )
-#t.add('Bet 4 data',4)
 
-while True:
-    time.sleep(60)
 
 
     
