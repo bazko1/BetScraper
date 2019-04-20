@@ -22,6 +22,8 @@ class DataSource(object):
                                           OddNumber INTEGER NOT NULL ,
                                           ResultHost NULL,
                                           ResultAway NULL,
+                                          URL VARCAHR,
+                                          INTERVAL INTEGER,
                                           PRIMARY KEY (Host,Away,DateOfMatch,TimeOfBegin, OddNumber)
 
                                          )""")
@@ -38,29 +40,45 @@ class DataSource(object):
         date = tup[0].replace('.', '-')
         if tup[3] == 'X':
             number = self.get_len_specific_data(host=tup[2], away=tup[4], date=date)
-            self.c.execute('INSERT INTO Odds VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',
-                           (date, tup[1], tup[2], tup[4], tup[5], tup[7], tup[6], 1, 0, number, None, None))
+            self.c.execute('INSERT INTO Odds VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+                           (date, tup[1], tup[2], tup[4], tup[5], tup[7], tup[6], 1, 0, number, None, None,None,None))
         else:
             number = self.get_len_specific_data(host=tup[2], away=tup[3], date=date)
-            self.c.execute('INSERT INTO Odds VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',
-                           (date, tup[1], tup[2], tup[3], tup[4], tup[5], None, 1, 0, number, None, None))
+            self.c.execute('INSERT INTO Odds VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+                           (date, tup[1], tup[2], tup[3], tup[4], tup[5], None, 1, 0, number, None, None,None,None))
         self.conn.commit()
 
     def insert_result(self, tup):
         self.c.execute('UPDATE Odds SET ResultHost=?, ResultAway=? WHERE DateOfMatch=? and Host=? and Away=?',
                        (tup[3],tup[4],tup[0],tup[1], tup[2]))
         self.conn.commit()
+
+    'tup= (date,host,away,url,int)'
+    def insert_url_int(self, tup):
+        self.c.execute('UPDATE Odds SET URL=?, INTERVAL=? WHERE DateOfMatch=? and Host=? and Away=?',
+                       (tup[3],tup[4],tup[0],tup[1],tup[2]))
+        self.conn.commit()
+    
     '''zwrocenie danych'''
     def get_data(self):
         self.c.execute('SELECT * FROM Odds')
         self.conn.commit()
         return self.c.fetchall()
+    
     '''zwrocenie danych z parameterem '''
     def get_parametr_data(self, host, away, date):
         self.c.execute('SELECT * FROM Odds WHERE DateOfMatch=? and Host=? and Away=? ORDER BY OddNumber',
                        (date, host, away))
         self.conn.commit()
         return self.c.fetchall()
+
+    '''zwrocenie danych wyszukanych za pomoco pola URL '''
+    def get_data_byURL(self, URL):
+        self.c.execute('SELECT * FROM Odds WHERE URL=?', (URL,) )
+        self.conn.commit()
+        return self.c.fetchall()
+
+
 
     '''zwrocenie ostatniego kursu z meczow'''
     def get_parametr_data_new(self, host, away, date):
@@ -82,4 +100,14 @@ class DataSource(object):
 
     def get_data_just_names_and_dates_sort_by_price(self):
         self.c.execute('SELECT Host, Away, DateOfMatch, TimeOfBegin FROM Odds WHERE OddNumber=0 ORDER BY Max(OddForHost, OddForAway, OddForDraw), TimeOfBegin DESC')
+        return self.c.fetchall()
+
+    def set_data_historical(self,host,away,date):
+        self.c.execute('UPDATE Odds SET IsActual=0 WHERE DateOfMatch=? and Host=? and Away=?',
+                       (date,host,away) )
+        self.conn.commit()
+    
+    'zwraca wszyszkie pary link czas odswiezania ktore nie sa w historycznych'
+    def get_all_urlint(self):
+        self.c.execute('select URL,INTERVAL from Odds WHERE URL!="" and IsActual=1')
         return self.c.fetchall()

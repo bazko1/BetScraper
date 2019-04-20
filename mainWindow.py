@@ -186,11 +186,11 @@ class ResultCell(QWidget):
             SmallMessageWindow("ok")
             result = (self.table.mylist[self.index][0], self.table.mylist[self.index][2], self.table.mylist[self.index][3], self.result1.text(), self.result2.text())
             if self.name=="a":
-                a.insert_result(result)
+                mainWindow.th.a.insert_result(result)
             if self.name=="h":
-                h.insert_result(result)
+                mainWindow.th.h.insert_result(result)
             if self.name=="s":
-                s.insert_result(result)
+                mainWindow.th.s.insert_result(result)
 
 class MyTab(QWidget):
     def __init__(self, name):
@@ -235,7 +235,7 @@ class MyTableModel(QAbstractTableModel):
         
         if (name=="Aktualne"):
             self.name="a"
-            self.mylist=getData(mainWindow.th.database)
+            self.mylist=getData(mainWindow.th.a)
         if (name=="Historyczne"):
             self.name="h"
             self.mylist=getData(mainWindow.th.h)
@@ -292,25 +292,25 @@ class MyTableModel(QAbstractTableModel):
             self.endResetModel()
             if (i == 0):
                 if self.name=="a":
-                    self.mylist=getData(mainWindow.th.database)
+                    self.mylist=getData(mainWindow.th.a)
                 if self.name == "h":
                     self.mylist=getData(mainWindow.th.h)
                 if self.name == "s":
                     self.mylist=getData(mainWindow.th.s)
             if (i == 1):
                 if self.name == "a":
-                    self.mylist = sortByDate(a)
+                    self.mylist = sortByDate(mainWindow.th.a)
                 if self.name == "h":
-                    self.mylist = sortByDate(h)
+                    self.mylist = sortByDate(mainWindow.th.h)
                 if self.name == "s":
-                    self.mylist = sortByDate(s)
+                    self.mylist = sortByDate(mainWindow.th.s)
             if (i == 2):
                 if self.name == "a":
-                    self.mylist = sortByPrice(a)
+                    self.mylist = sortByPrice(mainWindow.th.a)
                 if self.name == "h":
-                        self.mylist = sortByPrice(h)
+                        self.mylist = sortByPrice(mainWindow.th.h)
                 if self.name == "s":
-                    self.mylist = sortByPrice(s)
+                    self.mylist = sortByPrice(mainWindow.th.s)
             self.parent.AddColumn7_8()
 
 
@@ -384,7 +384,7 @@ class AddWindow(QDialog):
             MessageWindow("ok")
             url=re.sub('\'','',self.wpisz1.text())
             interval = int(self.wpisz2.text())
-            self.upperWindow.th.addM( url , interval  )
+            self.upperWindow.th.add( url , interval  )
             
             self.close()
 

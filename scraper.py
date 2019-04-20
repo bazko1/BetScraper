@@ -31,10 +31,11 @@ def getData(url):
         out = None
 
         try :
-                out = match_scraper(url)
+                out = list( match_scraper(url) )
+                out[0]=out[0].replace('.','-')
+                
         except Exception as e: 
-                #print ( 'failed to get data ', e ) 
-                out = ('Error',e)
+                print('scraper.py : ' + str(e))
+                out = ('Error',url)
         return out
-
 

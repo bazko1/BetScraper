@@ -19,6 +19,8 @@ class DataSourceActuall(DataSource):
                                               OddNumber INTEGER NOT NULL ,
                                               ResultHost NULL,
                                               ResultAway NULL,
+                                              URL VARCHAR,
+                                              INTERVAL VARCHAR,
                                               PRIMARY KEY (Host,Away,DateOfMatch,OddNumber)
                                              )""")
         self.conn.commit()
@@ -33,12 +35,12 @@ class DataSourceActuall(DataSource):
         date = tup[0].replace('.', '-')
         if tup[3] == 'X':
             number = self.get_len_specific_data(host=tup[2], away=tup[4], date=date)
-            self.c.execute('INSERT INTO Odds VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',
-                           (date, tup[1], tup[2], tup[4], tup[5], tup[7], tup[6], 1, 0, number, None, None))
+            self.c.execute('INSERT INTO Odds VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+                           (date, tup[1], tup[2], tup[4], tup[5], tup[7], tup[6], 1, 0, number, None, None,None,None))
         else:
             number = self.get_len_specific_data(host=tup[2], away=tup[3], date=date)
-            self.c.execute('INSERT INTO Odds VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',
-                           (date, tup[1], tup[2], tup[3], tup[4], tup[5], None, 1, 0, number, None, None))
+            self.c.execute('INSERT INTO Odds VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+                           (date, tup[1], tup[2], tup[3], tup[4], tup[5], None, 1, 0, number, None, None,None,None))
         self.conn.commit()
 
     def get_data(self):
@@ -51,6 +53,7 @@ class DataSourceActuall(DataSource):
                        (date, host, away))
         self.conn.commit()
         return self.c.fetchall()
+        
 
     def get_parametr_data_new(self, host, away, date):
         self.c.execute(
@@ -73,3 +76,4 @@ class DataSourceActuall(DataSource):
     def get_data_just_names_and_dates_sort_by_price(self):
         self.c.execute('SELECT Host, Away, DateOfMatch, TimeOfBegin FROM Odds WHERE IsActual=1 and OddNumber=0 ORDER BY Max(OddForHost, OddForAway, OddForDraw), TimeOfBegin DESC')
         return self.c.fetchall()
+
