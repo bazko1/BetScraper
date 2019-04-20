@@ -86,19 +86,20 @@ class TimedScraper(Thread):
             #but we got it in base so we can get from it
             if d[0] == 'Error':
                 d = self.a.get_data_byURL(url)[0]
-                print(d)
-
 
             #check if match should be in historical and removed from actual.
             Mdt = datetime.datetime.strptime( d[0] + " " + d[1] ,"%d-%m-%Y %H:%M")
             
             if now >= Mdt:
-                print('moving match do historical ' , d )
+                print('moving match to historical ' , d )
                 #Set IsActual=0 so we percieve this data as historical
                 if d[3] == 'X':
                     self.a.set_data_historical( d[2], d[4] , d[0] )
                 else:
                     self.a.set_data_historical( d[2], d[3] , d[0] )
+                
+                #remove from refresh array
+                self.bets = [b for b in self.bets if  not url in b  ]
 
             elif d[0] != 'Error' :
                 self.a.insert_data(d)
