@@ -21,10 +21,12 @@ class TimedScraper(Thread):
     
     def __init__(self,observer=None):
         Thread.__init__(self,daemon=True)
+        print('Initializing thread time : ' , datetime.datetime.now() )
         self.a = DataSourceActuall()
         self.h = DataSourceHistorical()
         self.s = DataSourceSuspicious()
         self.loadActuallUrls()
+        
 
     '''Main runner waits time specified in unitSec and calls update function'''
     def run(self):
@@ -39,10 +41,10 @@ class TimedScraper(Thread):
             bet[2]+=self.unitMin
             if bet[2] == bet[1]:
                 bet[2] = 0
-                push.append( scraper.getData( bet[0] ) )                
+                push.append( (scraper.getData( bet[0] ),bet[0] ) )                
 
         if len(push) > 0 :
-            self.notify(push,bet[0])
+            self.notify(push)
         
         
         pass
@@ -56,7 +58,7 @@ class TimedScraper(Thread):
             print('Failed to get data')
             return
 
-        #insert match data to actuall, url and interval can be once
+        #insert match data to actuall
         self.a.insert_data(data)
         
         if data[3] =='X':
@@ -64,8 +66,9 @@ class TimedScraper(Thread):
         else:
             d = (data[0].replace('.', '-'), data[2], data[3], url, interval) 
             
+        #insert url and interval 
         self.a.insert_url_int( d )
-
+        
         self.bets.append( [url , interval , 0 ] )
         
         #start main thread if we have first url
@@ -74,13 +77,12 @@ class TimedScraper(Thread):
         pass
 
 
-    'data is information scraped using scraper'
-    def notify(self,data,url):
+    'data is information scraped using scraper' 'data tuple (scraped(url),url) '
+    def notify(self,data): 
         
         now = datetime.datetime.now()
-        print('notify with data : '  + str(data) )
-        
-        for d in data:
+
+        for d,url in data:
             
             #if we get error in previously added match it probably already started
             #but we got it in base so we can get from it
@@ -89,17 +91,18 @@ class TimedScraper(Thread):
 
             #check if match should be in historical and removed from actual.
             Mdt = datetime.datetime.strptime( d[0] + " " + d[1] ,"%d-%m-%Y %H:%M")
-            
+
             if now >= Mdt:
-                print('moving match to historical ' , d )
+                
                 #Set IsActual=0 so we percieve this data as historical
+                
                 if d[3] == 'X':
                     self.a.set_data_historical( d[2], d[4] , d[0] )
                 else:
                     self.a.set_data_historical( d[2], d[3] , d[0] )
                 
                 #remove from refresh array
-                self.bets = [b for b in self.bets if  not url in b  ]
+                self.bets = list(filter( lambda x : not url in x  ,self.bets))
 
             elif d[0] != 'Error' :
                 self.a.insert_data(d)
@@ -107,7 +110,7 @@ class TimedScraper(Thread):
             else: 
                 print('failed to download ' + d[1] )
                 #match not started and d[0] == 'Error'
-                #we will not add anything and hope sts will fix itself so we can get later
+                #we will not add anything and hope sts will fix itself so we can get data later
                 pass
                 
 
@@ -124,4 +127,4 @@ class TimedScraper(Thread):
         if len(urls) > 0:
             self.start()
         
-        print('loaded' , urls , 'with ints : ', intervals )
+        print('loaded actual matches : ' , urls , 'with ints : ', intervals )
