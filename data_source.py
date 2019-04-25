@@ -111,3 +111,10 @@ class DataSource(object):
     def get_all_urlint(self):
         self.c.execute('select URL,INTERVAL from Odds WHERE URL!="" and IsActual=1')
         return self.c.fetchall()
+
+    'zwraca bety w kolejności pobierania'
+    def get_all_BetValues(self,host,away,date):
+        self.c.execute('SELECT OddForHost,OddForAway,OddForDraw from Odds WHERE DateOfMatch=? and Host=? and Away=?',
+        (date,host,away)
+        )
+        return self.c.fetchall()

@@ -15,6 +15,8 @@ from data_source import *
 from data_source_historical import *
 from data_source_suspicious import *
 import re
+import threading
+import plot
 from repeater import TimedScraper
 
 def getData(data):
@@ -217,12 +219,24 @@ class MyTab(QWidget):
     def AddColumn7_8(self):
         ile=self.table_model.rowCount(self)
         for i in range(0, ile):
-            showButton=QPushButton("Pokaż wykres")
-            showButton.setStyleSheet("background-color: beige;border-color: beige")
-            showButton.clicked.connect(Plot)
-            self.table_view.setIndexWidget(self.table_model.index(i, 8), showButton)
+            self.table_view.setIndexWidget(self.table_model.index(i, 8), ShowButton(i,self.table_model) )
             self.table_view.setIndexWidget(self.table_model.index(i, 7), ResultCell(self.table_model, i, self.table_model.name))
 
+
+class ShowButton(QPushButton):
+    def __init__(self,id,table):
+        super(ShowButton,self).__init__("Pokaż wykres")
+        self.setStyleSheet("background-color: beige;border-color: beige")
+        self.id = id
+        self.table = table
+        self.clicked.connect(self.showPlot )
+        
+
+    def showPlot(self):
+        
+        Plot( self.table.mylist[self.id][0], self.table.mylist[self.id][2], self.table.mylist[self.id][3])
+        
+        pass
 
 
 class MyTableModel(QAbstractTableModel):
@@ -314,13 +328,31 @@ class MyTableModel(QAbstractTableModel):
             self.parent.AddColumn7_8()
 
 
-class Plot(QDialog):
-    def __init__(self):
-        super().__init__()
-        self.dodaj()
-
+class Plot():
+    def __init__(self,date,home,away):
+        #super().__init__()
+        self.date = date
+        self.home = home
+        self.away = away
+        self.makePlot()
+        #self.dodaj()
+        
     def makePlot(self):
-        print ("Rysuje wykres")
+        #print( dir(self.table) )
+        #print(self.table)
+        #print ("Rysuje wykres dla danych " , self.date ,self.home , self.away)
+        betData = mainWindow.th.a.get_all_BetValues(self.home,self.away,self.date)
+        if len(betData) > 0:
+            if len( betData[0] ) == 3:
+                winH = list ( map (lambda x : x[0] ,betData) )
+                remisX = list ( map (lambda x : x[1] ,betData) )
+                winA = list ( map (lambda x : x[2] ,betData) )
+                plot.create_plot(self.home , self.away ,winH , winA , remisX )
+            elif len( betData[0] ) == 2:
+                winH = list ( map (lambda x : x[0] ,betData) )
+                winA = list ( map (lambda x : x[1] ,betData) )
+                plot.create_plot(self.home , self.away ,winH , winA  )
+
 
     def dodaj(self):
         self.setWindowTitle("Wykres kursów")
@@ -388,9 +420,7 @@ class AddWindow(QDialog):
             
             self.close()
 
-    "Regexpr: onedigit or twodigts or three less than 120 or 120"
     def checkTime(self, b):
-        #allowed 1 min for testing
         return  b.isdigit() and 121 > int(b) > 1
         
 
