@@ -15,7 +15,7 @@ from data_source import *
 from data_source_historical import *
 from data_source_suspicious import *
 import re
-import threading
+import multiprocessing
 import plot
 from repeater import TimedScraper
 
@@ -233,11 +233,9 @@ class ShowButton(QPushButton):
         
 
     def showPlot(self):
+        Args=( self.table.mylist[self.id][0], self.table.mylist[self.id][2], self.table.mylist[self.id][3])
+        multiprocessing.Process(target=Plot , args=Args , daemon=True).start()
         
-        Plot( self.table.mylist[self.id][0], self.table.mylist[self.id][2], self.table.mylist[self.id][3])
-        
-        pass
-
 
 class MyTableModel(QAbstractTableModel):
 
