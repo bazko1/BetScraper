@@ -1,7 +1,7 @@
+import matplotlib
 import matplotlib.pyplot as plt
 import random
 import numpy as np
-import matplotlib
 from pylab import *
 # x=["10:00","10:15","10:20","10:25","10:30","10:35","10:40","10:45","10:50","10:55","11:00","11:05","11:10"]
 # print(len(x))
@@ -24,8 +24,6 @@ def create_plot(host_name, away_name, *args):
 
     plt.legend(loc='lower left')
     plt.grid(True)
+    fig.canvas.set_window_title( host_name + ' - ' + away_name  )
     plt.show(block=True)
     
-    
-    
-
