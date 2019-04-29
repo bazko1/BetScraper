@@ -22,7 +22,7 @@ class DataSource(object):
                                           OddNumber INTEGER NOT NULL ,
                                           ResultHost NULL,
                                           ResultAway NULL,
-                                          URL VARCAHR,
+                                          URL VARCHAR,
                                           INTERVAL INTEGER,
                                           PRIMARY KEY (Host,Away,DateOfMatch,TimeOfBegin, OddNumber)
 
@@ -109,7 +109,7 @@ class DataSource(object):
     
     'zwraca wszyszkie pary link czas odswiezania ktore nie sa w historycznych'
     def get_all_urlint(self):
-        self.c.execute('select URL,INTERVAL from Odds WHERE URL!="" and IsActual=1')
+        self.c.execute('SELECT URL,INTERVAL from Odds WHERE URL!="" and IsActual=1')
         return self.c.fetchall()
 
     'zwraca bety w kolejności pobierania'

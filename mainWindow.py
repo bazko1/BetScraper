@@ -71,7 +71,7 @@ class mainWindow(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         
-        self.setFixedSize(950,600)
+        self.setFixedSize(900,600)
         self.interfejs()
 
     def addCall(self):
@@ -137,7 +137,7 @@ class mainWindow(QWidget):
         self.setLayout(layoutA)
 
 
-        self.setGeometry(20, 20, 850, 600)
+        #self.setGeometry(20, 20, 850, 600)
         self.setAutoFillBackground(True)
         p = self.palette()
         p.setColor(self.backgroundRole(), QColor(255, 165, 0))
@@ -149,7 +149,6 @@ class mainWindow(QWidget):
         self.actual.table_model.selectionchange(0)
         self.suspicious.table_model.selectionchange(0)
         self.historical.table_model.selectionchange(0)
-
 
 
 class ResultCell(QWidget):
@@ -194,6 +193,70 @@ class ResultCell(QWidget):
             if self.name=="s":
                 mainWindow.th.s.insert_result(result)
 
+class Check(QWidget):
+    def __init__(self, table, i, name):
+        super().__init__()
+        self.index=i
+        self.table=table
+        self.name=name
+        self.box=QCheckBox("", self)
+        self.box.stateChanged.connect(self.clickBox)
+        #self.box.setGeometry(30,30,20,20)
+        layout3=QVBoxLayout()
+        layout3.addWidget(self.box)
+        self.setLayout(layout3)
+        self.show()
+
+    def clickBox(self):
+        RemoveWindow(self)
+
+class RemoveWindow(QDialog):
+    def __init__(self, p):
+        super().__init__()
+        self.parent=p
+        self.delete()
+
+    def delete(self):
+        self.setWindowTitle("Usuń mecz")
+        self.setWindowModality(Qt.ApplicationModal)
+
+        self.setAutoFillBackground(True)
+        p = self.palette()
+        p.setColor(self.backgroundRole(), QColor(255, 165, 0))
+        self.setPalette(p)
+
+        layout4 = QVBoxLayout()
+        okBtn = QPushButton("USUŃ")
+        anulujBtn = QPushButton("ANULUJ")
+        self.wpisz1 = QLineEdit()
+        self.wpisz2 = QLineEdit()
+        tekst1 = QLabel("Czy na pewno chcesz usunąć mecz?")
+        layout4.addWidget(tekst1)
+        layout4.addWidget(okBtn)
+        layout4.addWidget(anulujBtn)
+        buttonBox = QDialogButtonBox()
+        okBtn.clicked.connect(self.remove)
+        anulujBtn.clicked.connect(self.close)
+        layout4.addWidget(buttonBox)
+        self.setLayout(layout4)
+        self.exec_()
+
+    def remove(self):
+        result = (self.parent.table.mylist[self.parent.index][2], self.parent.table.mylist[self.parent.index][3], self.parent.table.mylist[self.parent.index][0])
+        if self.parent.name == "a":
+            mainWindow.th.a.delete_specific_data(result[0], result[1], result[2])
+        if self.parent.name == "h":
+            mainWindow.th.h.delete_specific_data(result[0], result[1], result[2])
+        if self.parent.name == "s":
+            mainWindow.th.s.delete_specific_data(result[0], result[1], result[2])
+        msg=QMessageBox()
+        msg.setWindowTitle("Komunikat")
+        msg.setIcon(QMessageBox.Information)
+        msg.setText("Mecz został usunięty")
+        msg.setStandardButtons(QMessageBox.Ok)
+        msg.exec()
+        self.close()
+
 class MyTab(QWidget):
     def __init__(self, name):
         super().__init__()
@@ -213,14 +276,22 @@ class MyTab(QWidget):
     def AddTable(self, name):
         self.table_model=MyTableModel(name, self)
         self.table_view.setModel(self.table_model)
-        self.AddColumn7_8()
-        #self.table_view.setMinimumSize(300, 300)
+        self.AddColumn7_8_9()
+        self.table_view.setColumnWidth(2,70)
+        self.table_view.setColumnWidth(1, 90)
+        self.table_view.setMinimumWidth(1)
+        self.table_view.setColumnWidth(6, 50)
+        self.table_view.setColumnWidth(5, 80)
+        self.table_view.setColumnWidth(7, 80)
+        self.table_view.setColumnWidth(0, 75)
 
-    def AddColumn7_8(self):
+
+    def AddColumn7_8_9(self):
         ile=self.table_model.rowCount(self)
         for i in range(0, ile):
-            self.table_view.setIndexWidget(self.table_model.index(i, 8), ShowButton(i,self.table_model) )
-            self.table_view.setIndexWidget(self.table_model.index(i, 7), ResultCell(self.table_model, i, self.table_model.name))
+            self.table_view.setIndexWidget(self.table_model.index(i, 9), ShowButton(i,self.table_model) )
+            self.table_view.setIndexWidget(self.table_model.index(i, 8), ResultCell(self.table_model, i, self.table_model.name))
+            self.table_view.setIndexWidget(self.table_model.index(i,0), Check(self.table_model, i, self.table_model.name))
 
 
 class ShowButton(QPushButton):
@@ -259,44 +330,49 @@ class MyTableModel(QAbstractTableModel):
         return len(self.mylist)
 
     def columnCount(self,parent):
-        return 9
+        return 10
 
 
     def data(self, index, role=QtCore.Qt.DisplayRole):
         if role == QtCore.Qt.DisplayRole:
-            if index.column()==7:
-                return ""
             if index.column()==8:
                 return ""
-            if index.column() == 5:
-                return self.mylist[index.row()][6]
+            if index.column()==9:
+                return ""
+            if index.column()==0:
+                return  ""
             if index.column() == 6:
-                return self.mylist[index.row()][5]
-            return self.mylist[index.row()][index.column()]
+                return self.mylist[index.row()][7]
+            if index.column() == 7:
+                return self.mylist[index.row()][6]
+            return self.mylist[index.row()][index.column()-1]
         return None
 
     def headerData(self, column, orientation, role=QtCore.Qt.DisplayRole):
         if role != QtCore.Qt.DisplayRole:
             return QtCore.QVariant()
         if orientation == QtCore.Qt.Horizontal:
-            if column==0:
-                return QtCore.QVariant('Data')
             if column==1:
-                return QtCore.QVariant('Godzina')
+                return QtCore.QVariant('Data')
             if column==2:
-                return QtCore.QVariant('Drużyna 1')
+                return QtCore.QVariant('Godzina')
             if column==3:
-                return QtCore.QVariant('Drużyna 2')
+                return QtCore.QVariant('Drużyna 1')
             if column==4:
-                return QtCore.QVariant('Wygrana 1')
+                return QtCore.QVariant('Drużyna 2')
             if column==5:
-                return QtCore.QVariant('X')
+                return QtCore.QVariant('Wygrana 1')
             if column==6:
-                return QtCore.QVariant('Wygrana 2')
+                return QtCore.QVariant('X')
             if column==7:
-                return QtCore.QVariant('Wynik meczu')
+                return QtCore.QVariant('Wygrana 2')
             if column==8:
-                return QtCore.QVariant('Pokaz wykres')
+                return QtCore.QVariant('Wynik meczu')
+            if column==9:
+                return QtCore.QVariant('Pokaż wykres')
+            if column==0:
+                return QtCore.QVariant("Usuń")
+
 
     def selectionchange(self, i):
             self.beginResetModel()
@@ -323,7 +399,7 @@ class MyTableModel(QAbstractTableModel):
                         self.mylist = sortByPrice(mainWindow.th.h)
                 if self.name == "s":
                     self.mylist = sortByPrice(mainWindow.th.s)
-            self.parent.AddColumn7_8()
+            self.parent.AddColumn7_8_9()
 
 
 class Plot():

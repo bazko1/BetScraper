@@ -20,7 +20,7 @@ class DataSourceActuall(DataSource):
                                               ResultHost NULL,
                                               ResultAway NULL,
                                               URL VARCHAR,
-                                              INTERVAL VARCHAR,
+                                              INTERVAL INTEGER,
                                               PRIMARY KEY (Host,Away,DateOfMatch,OddNumber)
                                              )""")
         self.conn.commit()
