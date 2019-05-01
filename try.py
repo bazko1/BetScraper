@@ -2,7 +2,7 @@ from data_source import DataSource
 from data_source_actuall import DataSourceActuall
 from data_source_historical import DataSourceHistorical
 from data_source_suspicious import DataSourceSuspicious
-a=DataSourceActuall()
+a=DataSource()
 #a.insert_data(('10.04.2019', '21:00', 'Manch. Utd', 'X', 'Barcelona', '10.01', '10.01', '10.01'))
 #a.insert_data(('19.04.2019', '17:00', 'Warszawa', 'Jastrzębie', '10.01', '10.01'))
 #a.insert_data(('17.04.2019', '17:30', 'Zawiercie', 'Kędzierzyn', '10.01', '10.01'))
@@ -40,4 +40,24 @@ a=DataSourceActuall()
 #print(a.get_data() )
 #print( a.get_data_byURL('https://www.sts.pl/pl/oferta/zaklady-bukmacherskie/zaklady-sportowe/?action=offer&sport=201&region=6582&league=4397&oppty=187482937') )
 #print(a.get_data())
-print( a.get_all_urlint() )
+#print( a.get_all_urlint() )
+#betData=a.get_all_BetValues('Alaves','Barcelona','23-04-2019')
+
+
+# d = a.get_url('Opelka R.','Monfils G.','01-05-2019')
+
+# print(d)
+
+# for u in map(lambda x:x[0],d) :
+#     print(u)
+# d = a.get_url('Opelka R.','Monfils G.','01-05-2019')
+
+# print(d)
+
+
+#Kuznetsova S. - Teichmann J.
+#betData = a.get_all_BetValues('Kuznetsova S.','Teichmann J.','01-05-2019')
+#print(betData)
+d=('Aturay', 'Astana', '01-05-2019', '13:30')
+o=a.get_parametr_data_new(d[0],d[1],d[2])
+print(o)

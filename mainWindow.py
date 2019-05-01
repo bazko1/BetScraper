@@ -244,6 +244,9 @@ class RemoveWindow(QDialog):
     def remove(self):
         result = (self.parent.table.mylist[self.parent.index][2], self.parent.table.mylist[self.parent.index][3], self.parent.table.mylist[self.parent.index][0])
         if self.parent.name == "a":
+            #remove from refresh list
+            mainWindow.th.removeFromQueue(result[0],result[1],result[2])
+            #remove from database
             mainWindow.th.a.delete_specific_data(result[0], result[1], result[2])
         if self.parent.name == "h":
             mainWindow.th.h.delete_specific_data(result[0], result[1], result[2])
@@ -342,9 +345,9 @@ class MyTableModel(QAbstractTableModel):
             if index.column()==0:
                 return  ""
             if index.column() == 6:
-                return self.mylist[index.row()][7]
-            if index.column() == 7:
                 return self.mylist[index.row()][6]
+            if index.column() == 7:
+                return self.mylist[index.row()][5]
             return self.mylist[index.row()][index.column()-1]
         return None
 
@@ -415,17 +418,19 @@ class Plot():
         #print( dir(self.table) )
         #print(self.table)
         #print ("Rysuje wykres dla danych " , self.date ,self.home , self.away)
+        #betData = [host,away,draw]
         betData = mainWindow.th.a.get_all_BetValues(self.home,self.away,self.date)
         if len(betData) > 0:
-            if len( betData[0] ) == 3:
+            if len( betData[0] ) == 3 and not None in betData[0]:
                 winH = list ( map (lambda x : x[0] ,betData) )
-                remisX = list ( map (lambda x : x[1] ,betData) )
-                winA = list ( map (lambda x : x[2] ,betData) )
+                remisX = list ( map (lambda x : x[2] ,betData) )
+                winA = list ( map (lambda x : x[1] ,betData) )
                 plot.create_plot(self.home , self.away ,winH , winA , remisX )
-            elif len( betData[0] ) == 2:
+            elif len( betData[0] ) == 2 or None in betData[0]:
                 winH = list ( map (lambda x : x[0] ,betData) )
                 winA = list ( map (lambda x : x[1] ,betData) )
                 plot.create_plot(self.home , self.away ,winH , winA  )
+            
 
 
     def dodaj(self):

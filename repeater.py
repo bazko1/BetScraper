@@ -21,7 +21,6 @@ class TimedScraper(Thread):
     
     def __init__(self,observer=None):
         Thread.__init__(self,daemon=True)
-        print('Initializing thread time : ' , datetime.datetime.now() )
         self.a = DataSourceActuall()
         self.h = DataSourceHistorical()
         self.s = DataSourceSuspicious()
@@ -43,7 +42,7 @@ class TimedScraper(Thread):
                 bet[2] = 0
                 push.append( (scraper.getData( bet[0] ),bet[0] ) )                
 
-        if len(push) > 0 :
+        if len(push) > 0:
             self.notify(push)
         
         
@@ -55,7 +54,7 @@ class TimedScraper(Thread):
         data = scraper.getData( url )
         
         if data[0] == 'Error':
-            print('Failed to get data')
+            print('repeater.py(57): Failed to get data')
             return
 
         #insert match data to actuall
@@ -72,7 +71,7 @@ class TimedScraper(Thread):
         self.bets.append( [url , interval , 0 ] )
         
         #start main thread if we have first url
-        if len(self.bets) == 1:
+        if len(self.bets) == 1 and not self.is_alive():
             self.start()
         pass
 
@@ -108,7 +107,7 @@ class TimedScraper(Thread):
                 self.a.insert_data(d)
                 
             else: 
-                print('failed to download ' + d[1] )
+                print('repeater.py(110): failed to download ' + d[1] )
                 #match not started and d[0] == 'Error'
                 #we will not add anything and hope sts will fix itself so we can get data later
                 pass
@@ -124,7 +123,18 @@ class TimedScraper(Thread):
                 urls.append(u)
                 intervals.append(int(i))
         
-        if len(urls) > 0:
+        if len(urls) > 0 and not self.is_alive():
             self.start()
         
-        print('loaded actual matches : ' , urls , 'with ints : ', intervals )
+        print('repeater.py(129): loaded actual matches : ' , urls , 'with ints : ', intervals )
+
+    def removeFromQueue(self,host,away,date):
+        
+        dbUrls = map( lambda x : x[0],self.a.get_url(host,away,date) )
+        thUrls = map(lambda x : x[0] , self.bets )    
+
+        for url in dbUrls:
+            if url in thUrls:
+                print('repeater.py(138) : removing url from queue : ' + url )
+                self.bets = list( filter( lambda x : not url in x  ,self.bets) )
+                print( 'repeater.py ', self.bets )

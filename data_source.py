@@ -4,7 +4,7 @@ import sqlite3
 class DataSource(object):
     '''inicjalizacja kursora'''
     def __init__(self):
-        self.conn = sqlite3.connect('sts',check_same_thread=False)
+        self.conn = sqlite3.connect('sts',check_same_thread=False,timeout=30)
         self.c = self.conn.cursor()
         self.create_table()
     '''stworzenie tabeli'''
@@ -89,7 +89,7 @@ class DataSource(object):
     '''usuneicie danych z parametrem'''
     def delete_specific_data(self, host, away, date):
         self.c.execute('DELETE FROM Odds WHERE DateOfMatch=? and Host=? and Away=?', (date, host, away))
-
+        self.conn.commit()
     def get_data_just_names_and_dates(self):
         self.c.execute('SELECT Host, Away, DateOfMatch, TimeOfBegin FROM Odds WHERE OddNumber=0')
         return self.c.fetchall()
@@ -117,4 +117,11 @@ class DataSource(object):
         self.c.execute('SELECT OddForHost,OddForAway,OddForDraw from Odds WHERE DateOfMatch=? and Host=? and Away=?',
         (date,host,away)
         )
+        return self.c.fetchall()
+
+
+    'zwraca link dla konkretnego meczu'
+    def get_url(self,host,away,date):
+        self.c.execute('SELECT URL from Odds WHERE DateOfMatch=? and Host=? and Away=? and URL !=""',
+        (date,host,away))
         return self.c.fetchall()

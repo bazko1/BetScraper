@@ -50,7 +50,7 @@ class DataSourceActuall(DataSource):
 
     def get_parametr_data(self, host, away, date):
         self.c.execute('SELECT * FROM Odds WHERE DateOfMatch=? AND Host=? AND Away=? AND IsActual=1 ORDER BY OddNumber',
-                       (date, host, away))
+                       (date, host, away,))
         self.conn.commit()
         return self.c.fetchall()
         
@@ -58,13 +58,14 @@ class DataSourceActuall(DataSource):
     def get_parametr_data_new(self, host, away, date):
         self.c.execute(
             'SELECT * FROM Odds WHERE DateOfMatch=? AND Host=? AND Away=? AND IsActual=1 ORDER BY OddNumber DESC ',
-            (date, host, away))
+            (date, host, away,))
         self.conn.commit()
         return self.c.fetchall()[0]
 
     def delete_specific_data(self, host, away, date):
         self.c.execute('DELETE FROM Odds WHERE DateOfMatch=? AND Host=? AND Away=? AND IsActual=1', (date, host, away))
-
+        self.conn.commit()
+        
     def get_data_just_names_and_dates(self):
         self.c.execute('SELECT Host, Away, DateOfMatch, TimeOfBegin FROM Odds WHERE IsActual=1 and OddNumber=0')
         return self.c.fetchall()
