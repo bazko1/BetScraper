@@ -53,6 +53,12 @@ class DataSource(object):
                        (tup[3],tup[4],tup[0],tup[1], tup[2]))
         self.conn.commit()
 
+    def get_result(self, host,away,date):
+        self.c.execute('SELECT ResultHost,ResultAway FROM Odds WHERE DateOfMatch=? and Host=? and Away=?',
+        (date,host,away) )
+        return self.c.fetchone()
+
+
     'tup= (date,host,away,url,int)'
     def insert_url_int(self, tup):
         self.c.execute('UPDATE Odds SET URL=?, INTERVAL=? WHERE DateOfMatch=? and Host=? and Away=?',

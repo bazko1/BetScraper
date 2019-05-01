@@ -10,10 +10,12 @@ from pylab import *
 'oraz nazwy druzyn  '
 
 'args = [winHost] , [winAway] , [X]'
-def create_plot(host_name, away_name, *args):
+def create_plot(host_name, away_name,winHost,winAway,draw=None,result=(None,None) ):
     fig, ax = plt.subplots(nrows=1, ncols=1)
-    #ax = fig.add_subplot(1, 1, 1)
-    #plt.figure()
+    args=[winHost,winAway]
+    if draw:
+        args.append(draw)
+    
     ax.set_facecolor((0.8, 0.8, 0.8))
     plt.plot(args[0], color='green', marker='o', label=host_name, linewidth=3)
     plt.plot(args[1], color='red', marker='o', label=away_name, linewidth=3)
@@ -24,6 +26,8 @@ def create_plot(host_name, away_name, *args):
 
     plt.legend(loc='lower left')
     plt.grid(True)
-    fig.canvas.set_window_title( host_name + ' - ' + away_name  )
+    desc = host_name + ' - ' + away_name + ' '
+    if not None in result: desc += str(result[0]) + ':' + str(result[1])
+    fig.canvas.set_window_title( desc )
     plt.show(block=True)
     

@@ -420,16 +420,18 @@ class Plot():
         #print ("Rysuje wykres dla danych " , self.date ,self.home , self.away)
         #betData = [host,away,draw]
         betData = mainWindow.th.a.get_all_BetValues(self.home,self.away,self.date)
+        dbResult = mainWindow.th.a.get_result(self.home,self.away,self.date)
+
         if len(betData) > 0:
             if len( betData[0] ) == 3 and not None in betData[0]:
                 winH = list ( map (lambda x : x[0] ,betData) )
                 remisX = list ( map (lambda x : x[2] ,betData) )
                 winA = list ( map (lambda x : x[1] ,betData) )
-                plot.create_plot(self.home , self.away ,winH , winA , remisX )
+                plot.create_plot(self.home , self.away ,winH , winA , remisX , result=dbResult )
             elif len( betData[0] ) == 2 or None in betData[0]:
                 winH = list ( map (lambda x : x[0] ,betData) )
                 winA = list ( map (lambda x : x[1] ,betData) )
-                plot.create_plot(self.home , self.away ,winH , winA  )
+                plot.create_plot(self.home , self.away ,winH , winA ,result=dbResult  )
             
 
 
