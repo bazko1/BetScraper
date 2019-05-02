@@ -173,7 +173,7 @@ class TimedScraper(Thread):
         if hasDraw: last.append(d0[6]) , prev.append(d1[6])
         
         #compare
-        incr = list( map( lambda x: abs( max(x)/min(x) - 1 ) , zip(last,prev) ) )
+        incr = list( map( lambda x:  (max(x)/min(x) - 1 ) , zip(last,prev) ) )
         
         if len( list(filter( lambda x : x>=susIncr , incr )) ) > 0:
             self.a.set_data_suspicious(host,away,date)
