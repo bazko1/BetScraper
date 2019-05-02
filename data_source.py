@@ -91,7 +91,7 @@ class DataSource(object):
         self.c.execute('SELECT * FROM Odds WHERE DateOfMatch=? and Host=? and Away=? ORDER BY OddNumber DESC ',
                        (date, host, away))
         self.conn.commit()
-        return (self.c.fetchall()[0])
+        return self.c.fetchall()[0]
     '''usuneicie danych z parametrem'''
     def delete_specific_data(self, host, away, date):
         self.c.execute('DELETE FROM Odds WHERE DateOfMatch=? and Host=? and Away=?', (date, host, away))
@@ -113,6 +113,11 @@ class DataSource(object):
                        (date,host,away) )
         self.conn.commit()
     
+    def set_data_suspicious(self,host,away,date):
+        self.c.execute('UPDATE Odds SET IsSuspectOdd=1 WHERE DateOfMatch=? and Host=? and Away=?',
+                       (date,host,away) )
+        self.conn.commit()
+
     'zwraca wszyszkie pary link czas odswiezania ktore nie sa w historycznych'
     def get_all_urlint(self):
         self.c.execute('SELECT URL,INTERVAL from Odds WHERE URL!="" and IsActual=1')
@@ -131,3 +136,16 @@ class DataSource(object):
         self.c.execute('SELECT URL from Odds WHERE DateOfMatch=? and Host=? and Away=? and URL !=""',
         (date,host,away))
         return self.c.fetchall()
+
+    
+    'Zwraca najwieksza wartosc betu jaka jest w bazie danych dla hosta w konkretnym meczu'
+    def get_highest_hostOdd(self,host,away,date):
+        pass
+    
+    'Zwraca najwieksza wartosc betu jaka jest w bazie danych dla away w konkretnym meczu'
+    def get_highest_awayOdd(self,host,away,date):
+        pass
+    
+    'Zwraca najwieksza wartosc betu jaka jest w bazie danych dla remisu w konkretnym meczu'
+    def get_highest_drawOdd(self,host,away,date):
+        pass

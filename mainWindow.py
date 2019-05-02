@@ -251,6 +251,7 @@ class RemoveWindow(QDialog):
         if self.parent.name == "h":
             mainWindow.th.h.delete_specific_data(result[0], result[1], result[2])
         if self.parent.name == "s":
+            mainWindow.th.removeFromQueue(result[0],result[1],result[2])
             mainWindow.th.s.delete_specific_data(result[0], result[1], result[2])
         msg=QMessageBox()
         msg.setWindowTitle("Komunikat")
@@ -556,9 +557,6 @@ if __name__ == '__main__':
     import sys
 
     app = QApplication(sys.argv)
-    #a = DataSourceActuall()
-    #h = DataSourceHistorical()
-    #s = DataSourceSuspicious()
     okno = mainWindow()
     sys.exit(app.exec_())
     

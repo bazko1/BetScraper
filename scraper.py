@@ -26,7 +26,11 @@ def match_scraper(url):
     else:
         return information.replace('\n', '')[-18:-8],information.replace('\n', '')[-5:], bets_name[0], bets_name[1], bets_numbers[0], bets_numbers[1]
 
-
+'''
+Returns [dateOfMatch,startTime,Host,Away,OddForHost,OddForAway] if match cannot end with draw,
+[dateOfMatch,startTime,Host,X,Away,OddForHost,OddForDraw,OddForAway] if match can end with draw,
+(Error,url) - if there was any exception during scraping process thrown.
+'''
 def getData(url):
         out = None
 

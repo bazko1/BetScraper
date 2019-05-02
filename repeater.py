@@ -105,7 +105,9 @@ class TimedScraper(Thread):
 
             elif d[0] != 'Error' :
                 self.a.insert_data(d)
-                
+                #spot suspicious
+                self.spotSuspicious(d)
+
             else: 
                 print('repeater.py(110): failed to download ' + d[1] )
                 #match not started and d[0] == 'Error'
@@ -138,3 +140,41 @@ class TimedScraper(Thread):
                 print('repeater.py(138) : removing url from queue : ' + url )
                 self.bets = list( filter( lambda x : not url in x  ,self.bets) )
                 print( 'repeater.py ', self.bets )
+
+    '''
+    '''
+    def spotSuspicious(self,data):
+        #if data increased 10% we say its suspicious
+        susIncr = 0.1
+        
+        hasDraw = (data[3] == 'X')
+        
+        if hasDraw:
+            host,away,date = data[2],data[4] ,data[0]
+        else:
+            host,away,date = data[2],data[3] ,data[0]
+        
+        #check if match alread is in suspicious
+        check = self.s.get_parametr_data_new(host,away,date)
+        if  check != None and len(check) > 0:
+            return True
+        
+        #take last 2 matches from db 
+        dbData = self.a.get_parametr_data(host,away,date)
+        
+        if len(dbData) < 2:
+            return False
+        
+        d0,d1 = dbData[-1],dbData[-2]
+
+        last = [ d0[4] , d0[5] ]
+        prev = [ d1[4] , d1[5] ]
+
+        if hasDraw: last.append(d0[6]) , prev.append(d1[6])
+        
+        #compare
+        incr = list( map( lambda x: abs( max(x)/min(x) - 1 ) , zip(last,prev) ) )
+        
+        if len( list(filter( lambda x : x>=susIncr , incr )) ) > 0:
+            self.a.set_data_suspicious(host,away,date)
+        pass

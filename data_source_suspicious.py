@@ -51,11 +51,12 @@ class DataSourceSuspicious(DataSource):
             'SELECT * FROM Odds WHERE DateOfMatch=? AND Host=? AND Away=? AND IsSuspectOdd=1 ORDER BY OddNumber DESC ',
             (date, host, away))
         self.conn.commit()
-        return self.c.fetchall()[0]
+        return self.c.fetchone()
 
     def delete_specific_data(self, host, away, date):
         self.c.execute('DELETE FROM Odds WHERE DateOfMatch=? AND Host=? AND Away=? AND IsSuspectOdd=1',
                        (date, host, away))
+        self.conn.commit()
 
     def get_data_just_names_and_dates(self):
         self.c.execute('SELECT Host, Away, DateOfMatch, TimeOfBegin FROM Odds WHERE IsSuspectOdd=1 and OddNumber=0')
