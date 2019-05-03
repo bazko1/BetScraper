@@ -143,6 +143,7 @@ class mainWindow(QWidget):
         p.setColor(self.backgroundRole(), QColor(255, 165, 0))
         self.setPalette(p)
         self.setWindowTitle("Aplikacja bukmacherska")
+        self.setWindowIcon(QIcon('data/logo.jpeg'))
         self.show()
 
     def refresh(self):
