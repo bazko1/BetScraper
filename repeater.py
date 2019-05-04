@@ -121,7 +121,7 @@ class TimedScraper(Thread):
 
         for u,i in self.a.get_all_urlint():
             if not u in urls:
-                self.bets.append( [u , int(i) , 0 ] )
+                self.bets.append( [u , int(i) , int(i) - 1 ] )
                 urls.append(u)
                 intervals.append(int(i))
         
