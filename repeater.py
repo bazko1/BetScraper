@@ -55,7 +55,7 @@ class TimedScraper(Thread):
         
         if data[0] == 'Error':
             print('repeater.py(57): Failed to get data')
-            return
+            return "Error"
 
         #insert match data to actuall
         self.a.insert_data(data)

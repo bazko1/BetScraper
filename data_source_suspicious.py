@@ -63,7 +63,7 @@ class DataSourceSuspicious(DataSource):
         return self.c.fetchall()
 
     def get_data_just_names_and_dates_sort_by_date(self):
-        self.c.execute('SELECT Host, Away, DateOfMatch, TimeOfBegin FROM Odds WHERE IsSuspectOdd=1 and OddNumber=0 ORDER BY DateOfMatch DESC, TimeOfBegin ASC')
+        self.c.execute('SELECT Host, Away, DateOfMatch, TimeOfBegin FROM Odds WHERE IsSuspectOdd=1 and OddNumber=0 ORDER BY DateOfMatch ASC, TimeOfBegin ASC')
         return self.c.fetchall()
 
     def get_data_just_names_and_dates_sort_by_price(self):

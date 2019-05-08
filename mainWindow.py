@@ -19,6 +19,7 @@ import multiprocessing
 import plot
 from repeater import TimedScraper
 
+
 def getData(data):
     list1=data.get_data_just_names_and_dates()
     listToShow=[]
@@ -27,7 +28,7 @@ def getData(data):
             listToShow.append(tmp)
     return listToShow
 
-
+#sortowanie wg daty meczu rosnaco
 def sortByDate(data):
     list1=data.get_data_just_names_and_dates_sort_by_date()
     listToShow=[]
@@ -36,6 +37,7 @@ def sortByDate(data):
         listToShow.append(tmp)
     return listToShow
 
+#sortowanie wg kwoty zakladu od najwiekszego
 def sortByPrice(data):
     list1=data.get_data_just_names_and_dates()
     listToShow=[]
@@ -66,11 +68,10 @@ def sortByPrice(data):
 
 
 
-class mainWindow(QWidget):
+class MainWindow(QWidget):
     th = TimedScraper()
     def __init__(self, parent=None):
         super().__init__(parent)
-        
         self.setFixedSize(900,600)
         self.interfejs()
 
@@ -93,19 +94,29 @@ class mainWindow(QWidget):
         title.setFont(font)
         layoutA.addWidget(title)
 
-        # przyciski
-        DodajBtn = QPushButton("Dodaj mecz", self)
-        DodajBtn.setMaximumWidth(200)
-        DodajBtn.setStyleSheet("font: bold; color: dark blue; background-color: white; border-color: beige")
-        DodajBtn.clicked.connect(self.addCall)
+    # Przyciski
+        dodajBtn = QPushButton("Dodaj mecz", self)
+        dodajBtn.setMaximumWidth(200)
+        dodajBtn.setStyleSheet("font: bold; color: dark blue; background-color: white; border-color: beige")
+        dodajBtn.clicked.connect(self.addCall)
+
         koniecBtn = QPushButton("Zakończ", self)
         koniecBtn.setMaximumWidth(200)
         koniecBtn.setStyleSheet("font: bold;color: dark blue; background-color: white; border-color: beige")
         koniecBtn.clicked.connect(QApplication.instance().quit)
-        OdswiezBtn = QPushButton("Odśwież widok", self)
-        OdswiezBtn.setMaximumWidth(200)
-        OdswiezBtn.setStyleSheet("font: bold; color: dark blue; background-color: white; border-color: beige")
-        OdswiezBtn.clicked.connect(self.refresh)
+
+        odswiezBtn = QPushButton("Odśwież widok", self)
+        odswiezBtn.setMaximumWidth(200)
+        odswiezBtn.setStyleSheet("font: bold; color: dark blue; background-color: white; border-color: beige")
+        odswiezBtn.clicked.connect(self.refresh)
+
+        btnGroup = QVBoxLayout()
+        btnGroup.addWidget(dodajBtn)
+        btnGroup.addWidget(odswiezBtn)
+        btnGroup.addWidget(koniecBtn)
+        btnGroup.setSpacing(0)
+
+    #Obrazek-logo STS
 
         inputImg = QImage("data/logo.jpeg")
         imgDisplayLabel = QLabel()
@@ -113,11 +124,7 @@ class mainWindow(QWidget):
         imgDisplayLabel.setScaledContents(True)
         imgDisplayLabel.setFixedSize(200, 150)
 
-        btnGroup = QVBoxLayout()
-        btnGroup.addWidget(DodajBtn)
-        btnGroup.addWidget(OdswiezBtn)
-        btnGroup.addWidget(koniecBtn)
-        btnGroup.setSpacing(0)
+
 
         gridLayout=QGridLayout()
         gridLayout.addWidget(imgDisplayLabel, 0,2)
@@ -125,6 +132,7 @@ class mainWindow(QWidget):
         gridLayout.setColumnStretch(1, -2)
         layoutA.addLayout(gridLayout)
 
+    #Zakładki
         tab_widget = QTabWidget()
         self.actual=MyTab("Aktualne")
         self.historical=MyTab("Historyczne")
@@ -133,11 +141,9 @@ class mainWindow(QWidget):
         tab_widget.addTab(self.suspicious, "Podejrzane")
         tab_widget.addTab(self.historical, "Historyczne")
         layoutA.addWidget( tab_widget)
-        #layoutA.addLayout(layoutB)
         self.setLayout(layoutA)
 
 
-        #self.setGeometry(20, 20, 850, 600)
         self.setAutoFillBackground(True)
         p = self.palette()
         p.setColor(self.backgroundRole(), QColor(255, 165, 0))
@@ -151,7 +157,7 @@ class mainWindow(QWidget):
         self.suspicious.table_model.selectionchange(0)
         self.historical.table_model.selectionchange(0)
 
-
+#Pole do wpisania wyniku
 class ResultCell(QWidget):
 
     def __init__(self, table, i, name):
@@ -178,22 +184,22 @@ class ResultCell(QWidget):
 
     def onPressed(self):
         if (self.result1.text()==""):
-            SmallMessageWindow("brak")
-
+            MessageWindow("brak2")
             return
         if (self.result2.text()==""):
-            SmallMessageWindow("brak")
+            MessageWindow("brak2")
             return
         else:
-            SmallMessageWindow("ok")
+            MessageWindow("ok2")
             result = (self.table.mylist[self.index][0], self.table.mylist[self.index][2], self.table.mylist[self.index][3], self.result1.text(), self.result2.text())
             if self.name=="a":
-                mainWindow.th.a.insert_result(result)
+                MainWindow.th.a.insert_result(result)
             if self.name=="h":
-                mainWindow.th.h.insert_result(result)
+                MainWindow.th.h.insert_result(result)
             if self.name=="s":
-                mainWindow.th.s.insert_result(result)
+                MainWindow.th.s.insert_result(result)
 
+#Pole 'Usun' w tablicach z meczami
 class Check(QWidget):
     def __init__(self, table, i, name):
         super().__init__()
@@ -202,7 +208,6 @@ class Check(QWidget):
         self.name=name
         self.box=QCheckBox("", self)
         self.box.stateChanged.connect(self.clickBox)
-        #self.box.setGeometry(30,30,20,20)
         layout3=QVBoxLayout()
         layout3.addWidget(self.box)
         self.setLayout(layout3)
@@ -211,6 +216,7 @@ class Check(QWidget):
     def clickBox(self):
         RemoveWindow(self)
 
+#Okienko z informacja przy usuwaniu meczu
 class RemoveWindow(QDialog):
     def __init__(self, p):
         super().__init__()
@@ -246,28 +252,24 @@ class RemoveWindow(QDialog):
         result = (self.parent.table.mylist[self.parent.index][2], self.parent.table.mylist[self.parent.index][3], self.parent.table.mylist[self.parent.index][0])
         if self.parent.name == "a":
             #remove from refresh list
-            mainWindow.th.removeFromQueue(result[0],result[1],result[2])
+            MainWindow.th.removeFromQueue(result[0],result[1],result[2])
             #remove from database
-            mainWindow.th.a.delete_specific_data(result[0], result[1], result[2])
+            MainWindow.th.a.delete_specific_data(result[0], result[1], result[2])
         if self.parent.name == "h":
-            mainWindow.th.h.delete_specific_data(result[0], result[1], result[2])
+            MainWindow.th.h.delete_specific_data(result[0], result[1], result[2])
         if self.parent.name == "s":
-            mainWindow.th.removeFromQueue(result[0],result[1],result[2])
-            mainWindow.th.s.delete_specific_data(result[0], result[1], result[2])
-        msg=QMessageBox()
-        msg.setWindowTitle("Komunikat")
-        msg.setIcon(QMessageBox.Information)
-        msg.setText("Mecz został usunięty")
-        msg.setStandardButtons(QMessageBox.Ok)
-        msg.exec()
+            MainWindow.th.removeFromQueue(result[0],result[1],result[2])
+            MainWindow.th.s.delete_specific_data(result[0], result[1], result[2])
+        MessageWindow("usun")
         self.close()
 
+#Zakładki 'Aktualne', 'Podejrzane', 'Historyczne'
 class MyTab(QWidget):
     def __init__(self, name):
         super().__init__()
         self.setWindowTitle(name)
         self.table_view=QTableView()
-        self.table=self.AddTable(name)
+        self.table=self.addTable(name)
         layout2=QVBoxLayout()
         sort_text=QLabel("Sortuj według: ")
         cb = QComboBox()
@@ -278,10 +280,10 @@ class MyTab(QWidget):
         layout2.addWidget(self.table_view)
         self.setLayout(layout2)
 
-    def AddTable(self, name):
+    def addTable(self, name):
         self.table_model=MyTableModel(name, self)
         self.table_view.setModel(self.table_model)
-        self.AddColumn7_8_9()
+        self.addColumn0_8_9()
         self.table_view.setColumnWidth(2,70)
         self.table_view.setColumnWidth(1, 90)
         self.table_view.setMinimumWidth(1)
@@ -291,14 +293,14 @@ class MyTab(QWidget):
         self.table_view.setColumnWidth(0, 75)
 
 
-    def AddColumn7_8_9(self):
+    def addColumn0_8_9(self):
         ile=self.table_model.rowCount(self)
         for i in range(0, ile):
             self.table_view.setIndexWidget(self.table_model.index(i, 9), ShowButton(i,self.table_model) )
             self.table_view.setIndexWidget(self.table_model.index(i, 8), ResultCell(self.table_model, i, self.table_model.name))
             self.table_view.setIndexWidget(self.table_model.index(i,0), Check(self.table_model, i, self.table_model.name))
 
-
+#Przycisk 'Pokaz wykres'
 class ShowButton(QPushButton):
     def __init__(self,id,table):
         super(ShowButton,self).__init__("Pokaż wykres")
@@ -323,13 +325,13 @@ class MyTableModel(QAbstractTableModel):
         
         if (name=="Aktualne"):
             self.name="a"
-            self.mylist=getData(mainWindow.th.a)
+            self.mylist=getData(MainWindow.th.a)
         if (name=="Historyczne"):
             self.name="h"
-            self.mylist=getData(mainWindow.th.h)
+            self.mylist=getData(MainWindow.th.h)
         if (name=="Podejrzane"):
             self.name="s"
-            self.mylist=getData(mainWindow.th.s)
+            self.mylist=getData(MainWindow.th.s)
 
     def rowCount(self,parent):
         return len(self.mylist)
@@ -378,51 +380,49 @@ class MyTableModel(QAbstractTableModel):
             if column==0:
                 return QtCore.QVariant("Usuń")
 
-
+    #zmiana kryteriow sortowania
     def selectionchange(self, i):
             self.beginResetModel()
             self.mylist=[]
             self.endResetModel()
             if (i == 0):
                 if self.name=="a":
-                    self.mylist=getData(mainWindow.th.a)
+                    self.mylist=getData(MainWindow.th.a)
                 if self.name == "h":
-                    self.mylist=getData(mainWindow.th.h)
+                    self.mylist=getData(MainWindow.th.h)
                 if self.name == "s":
-                    self.mylist=getData(mainWindow.th.s)
+                    self.mylist=getData(MainWindow.th.s)
             if (i == 1):
                 if self.name == "a":
-                    self.mylist = sortByDate(mainWindow.th.a)
+                    self.mylist = sortByDate(MainWindow.th.a)
                 if self.name == "h":
-                    self.mylist = sortByDate(mainWindow.th.h)
+                    self.mylist = sortByDate(MainWindow.th.h)
                 if self.name == "s":
-                    self.mylist = sortByDate(mainWindow.th.s)
+                    self.mylist = sortByDate(MainWindow.th.s)
             if (i == 2):
                 if self.name == "a":
-                    self.mylist = sortByPrice(mainWindow.th.a)
+                    self.mylist = sortByPrice(MainWindow.th.a)
                 if self.name == "h":
-                        self.mylist = sortByPrice(mainWindow.th.h)
+                        self.mylist = sortByPrice(MainWindow.th.h)
                 if self.name == "s":
-                    self.mylist = sortByPrice(mainWindow.th.s)
-            self.parent.AddColumn7_8_9()
+                    self.mylist = sortByPrice(MainWindow.th.s)
+            self.parent.addColumn0_8_9()
 
-
+#Okienko z wykresem
 class Plot():
     def __init__(self,date,home,away):
-        #super().__init__()
         self.date = date
         self.home = home
         self.away = away
         self.makePlot()
-        #self.dodaj()
-        
+
     def makePlot(self):
         #print( dir(self.table) )
         #print(self.table)
         #print ("Rysuje wykres dla danych " , self.date ,self.home , self.away)
         #betData = [host,away,draw]
-        betData = mainWindow.th.a.get_all_BetValues(self.home,self.away,self.date)
-        dbResult = mainWindow.th.a.get_result(self.home,self.away,self.date)
+        betData = MainWindow.th.a.get_all_BetValues(self.home,self.away,self.date)
+        dbResult = MainWindow.th.a.get_result(self.home,self.away,self.date)
 
         if len(betData) > 0:
             if len( betData[0] ) == 3 and not None in betData[0]:
@@ -437,10 +437,9 @@ class Plot():
             
 
 
-    def dodaj(self):
+    def showPlot(self):
         self.setWindowTitle("Wykres kursów")
         self.setWindowModality(Qt.ApplicationModal)
-
         self.setAutoFillBackground(True)
         p = self.palette()
         p.setColor(self.backgroundRole(), QColor(255, 165, 0))
@@ -455,14 +454,11 @@ class AddWindow(QDialog):
     def __init__(self,upperWindow):
         super().__init__()
         self.upperWindow = upperWindow
-        self.dodajView()
+        self.addView()
         
-    def dodajView(self):
-
-
+    def addView(self):
         self.setWindowTitle("Dodaj zakład")
         self.setWindowModality(Qt.ApplicationModal)
-
         self.setAutoFillBackground(True)
         p = self.palette()
         p.setColor(self.backgroundRole(), QColor(255, 165, 0))
@@ -482,31 +478,34 @@ class AddWindow(QDialog):
         layout1.addWidget(okBtn)
         layout1.addWidget(anulujBtn)
         buttonBox = QDialogButtonBox()
-        okBtn.clicked.connect(self.add)
+        okBtn.clicked.connect(self.checkInputData)
         anulujBtn.clicked.connect(self.close)
         layout1.addWidget(buttonBox)
         self.setLayout(layout1)
         self.exec_()
 
-    def add(self):
+    def checkInputData(self):
         a=self.wpisz1.text()
         b=self.wpisz2.text()
         if a=="" or b=="":
-            MessageWindow("brak")
+            MessageWindow("brak1")
         elif not self.checkTime(b):
             MessageWindow("czas")
         else:
-            MessageWindow("ok")
+            #MessageWindow("ok1")
             url=re.sub('\'','',self.wpisz1.text())
             interval = int(self.wpisz2.text())
-            self.upperWindow.th.add( url , interval  )
-            
-            self.close()
+            result=self.upperWindow.th.add( url , interval  )
+            if result=="Error":
+                MessageWindow("link")
+            else:
+                MessageWindow("ok1")
+                self.close()
 
     def checkTime(self, b):
         return  b.isdigit() and 121 > int(b) > 1
         
-
+#Okienka z komunikatem
 class MessageWindow(QMessageBox):
     def __init__(self, str):
         super().__init__()
@@ -515,10 +514,16 @@ class MessageWindow(QMessageBox):
     def show(self,str):
         msg= QMessageBox()
         msg.setWindowTitle("Komunikat")
-        if str=="brak":
+        if str=="brak1":#gdy nie wszystkie pola sa wypelnione przy dodawaniu meczu
             msg.setIcon(QMessageBox.Critical)
             msg.setText("Uzupełnij wszystkie pola")
             msg.setInformativeText("Mecz nie został dodany")
+            msg.setStandardButtons(QMessageBox.Ok)
+            msg.exec()
+        if str=="brak2":#gdy nie wszystkie pola wypelnione przy dodawaniu wyniku
+            msg.setIcon(QMessageBox.Critical)
+            msg.setText("Uzupełnij wszystkie pola")
+            msg.setInformativeText("Wynik nie został zapisany")
             msg.setStandardButtons(QMessageBox.Ok)
             msg.exec()
         if str=="czas":
@@ -527,37 +532,39 @@ class MessageWindow(QMessageBox):
             msg.setInformativeText("Wpisz liczbę z przedziału 2-120")
             msg.setStandardButtons(QMessageBox.Ok)
             msg.exec()
-        if str=="ok":
+        if str=="link":
+            msg.setIcon(QMessageBox.Critical)
+            msg.setText("Niepoprawny link")
+            msg.setInformativeText("Podaj link do odpowiedniego meczu ze strony STS")
+            msg.setStandardButtons(QMessageBox.Ok)
+            msg.exec()
+        if str=="ok1":
             msg.setIcon(QMessageBox.Information)
             msg.setText("Mecz został dodany")
             msg.setStandardButtons(QMessageBox.Ok)
             msg.exec()
-
-class SmallMessageWindow(QMessageBox):
-    def __init__(self, str):
-        super().__init__()
-        self.show(str)
-
-    def show(self,str):
-        msg= QMessageBox()
-        msg.setWindowTitle("Komunikat")
-        if str=="brak":
-            msg.setIcon(QMessageBox.Critical)
-            msg.setText("Uzupełnij wszystkie pola")
-            msg.setInformativeText("Wynik nie został zapisany")
-            msg.setStandardButtons(QMessageBox.Ok)
-            msg.exec()
-        if str=="ok":
+        if str=="ok2":
             msg.setIcon(QMessageBox.Information)
             msg.setText("Wynik został zapisany")
             msg.setStandardButtons(QMessageBox.Ok)
             msg.exec()
+        if str=="nowy":
+            msg.setIcon(QMessageBox.Information)
+            msg.setText("Nowy mecz w zakładce 'Podejrzane'")
+            msg.setStandardButtons(QMessageBox.Ok)
+            msg.exec()
+        if str=="usun":
+            msg.setIcon(QMessageBox.Information)
+            msg.setText("Mecz został usunięty")
+            msg.setStandardButtons(QMessageBox.Ok)
+            msg.exec()
+
 
 
 if __name__ == '__main__':
     import sys
 
     app = QApplication(sys.argv)
-    okno = mainWindow()
+    okno = MainWindow()
     sys.exit(app.exec_())
     
