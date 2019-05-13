@@ -8,7 +8,6 @@ from data_source_suspicious import DataSourceSuspicious
 import datetime
 
 
-
 class TimedScraper(Thread):
 
     'Array with arrays [url,updateTime,timeLeft]'
@@ -19,7 +18,7 @@ class TimedScraper(Thread):
     
     _shouldRun = True
     
-    def __init__(self,observer=None):
+    def __init__(self):
         Thread.__init__(self,daemon=True)
         self.a = DataSourceActuall()
         self.h = DataSourceHistorical()
@@ -144,6 +143,8 @@ class TimedScraper(Thread):
     '''
     '''
     def spotSuspicious(self,data):
+        from mainWindow import MessageWindow
+
         #if data increased 10% we say its suspicious
         susIncr = 0.1
         
@@ -154,7 +155,7 @@ class TimedScraper(Thread):
         else:
             host,away,date = data[2],data[3] ,data[0]
         
-        #check if match alread is in suspicious
+        #check if match already is in suspicious
         check = self.s.get_parametr_data_new(host,away,date)
         if  check != None and len(check) > 0:
             return True
@@ -172,9 +173,13 @@ class TimedScraper(Thread):
 
         if hasDraw: last.append(d0[6]) , prev.append(d1[6])
         
-        #compare
+        #compare 
         incr = list( map( lambda x:  (max(x)/min(x) - 1 ) , zip(last,prev) ) )
         
+        #if there are some suspicious matches add them to db
         if len( list(filter( lambda x : x>=susIncr , incr )) ) > 0:
             self.a.set_data_suspicious(host,away,date)
-        pass
+            
+            #and put message with information
+            MessageWindow("nowy")
+        
