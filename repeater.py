@@ -17,7 +17,14 @@ class TimedScraper(Thread):
     unitSec = unitMin * 60
     
     _shouldRun = True
-    
+    __instance = None
+
+    def __new__(cls):
+        if TimedScraper.__instance is None:
+            cls.__instance = Thread.__new__(cls)
+        return cls.__instance
+
+
     def __init__(self):
         Thread.__init__(self,daemon=True)
         self.a = DataSourceActuall()
