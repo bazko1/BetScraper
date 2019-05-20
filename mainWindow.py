@@ -85,7 +85,7 @@ class MainWindow(QWidget):
 
     # Napis glowny
         title=QLabel("APLIKACJA BUKMACHERSKA", self)
-        title.setFixedSize(980,40)
+        title.setFixedSize(880,40)
         title.setAlignment(QtCore.Qt.AlignCenter)
 
         font = QFont()
@@ -270,15 +270,29 @@ class MyTab(QWidget):
         self.setWindowTitle(name)
         self.table_view=QTableView()
         self.table=self.addTable(name)
-        layout2=QVBoxLayout()
+        self.layout2=QVBoxLayout()
         sort_text=QLabel("Sortuj według: ")
         cb = QComboBox()
         cb.addItems(["Data dodania zakładu", "Data rozgrywki", "Kwota zakładu"])
         cb.currentIndexChanged.connect(self.table_model.selectionchange)
-        layout2.addWidget(sort_text)
-        layout2.addWidget(cb)
-        layout2.addWidget(self.table_view)
-        self.setLayout(layout2)
+        self.layout2.addWidget(sort_text)
+        self.layout2.addWidget(cb)
+        self.layout2.addWidget(self.table_view)
+        self.checkIsEmpty(name)
+        print (self.layout2.count())
+        self.setLayout(self.layout2)
+
+    def checkIsEmpty(self, name):
+        if self.table_model.rowCount(self) == 0 and self.layout2.count()==3:
+            if name=="Aktualne":
+                self.info=QLabel("Brak aktualnych meczów")
+            if name=="Historyczne":
+                self.info=QLabel("Brak historycznych meczów")
+            if name=="Podejrzane":
+                self.info=QLabel("Brak podejrzanych meczów")
+            self.layout2.addWidget(self.info)
+        elif self.layout2.count()==4 and self.table_model.rowCount(self)!=0:
+                self.layout2.itemAt(3).widget().deleteLater()
 
     def addTable(self, name):
         self.table_model=MyTableModel(name, self)
@@ -299,6 +313,14 @@ class MyTab(QWidget):
             self.table_view.setIndexWidget(self.table_model.index(i, 9), ShowButton(i,self.table_model) )
             self.table_view.setIndexWidget(self.table_model.index(i, 8), ResultCell(self.table_model, i, self.table_model.name))
             self.table_view.setIndexWidget(self.table_model.index(i,0), Check(self.table_model, i, self.table_model.name))
+
+    def showInfo(self):
+        self.inf=QWidget()
+        layout=QVBoxLayout()
+        self.info = QLabel("Brak aktualnych meczów")
+        layout.addWidget(self.info)
+        self.inf.setLayout(layout)
+        self.inf.show()
 
 #Przycisk 'Pokaz wykres'
 class ShowButton(QPushButton):
@@ -388,24 +410,33 @@ class MyTableModel(QAbstractTableModel):
             if (i == 0):
                 if self.name=="a":
                     self.mylist=getData(MainWindow.th.a)
+                    self.parent.checkIsEmpty("Aktualne")
                 if self.name == "h":
                     self.mylist=getData(MainWindow.th.h)
+                    self.parent.checkIsEmpty("Historyczne")
                 if self.name == "s":
                     self.mylist=getData(MainWindow.th.s)
+                    self.parent.checkIsEmpty("Podejrzane")
             if (i == 1):
                 if self.name == "a":
                     self.mylist = sortByDate(MainWindow.th.a)
+                    self.parent.checkIsEmpty("Aktualne")
                 if self.name == "h":
                     self.mylist = sortByDate(MainWindow.th.h)
+                    self.parent.checkIsEmpty("Historyczne")
                 if self.name == "s":
                     self.mylist = sortByDate(MainWindow.th.s)
+                    self.parent.checkIsEmpty("Podejrzane")
             if (i == 2):
                 if self.name == "a":
                     self.mylist = sortByPrice(MainWindow.th.a)
+                    self.parent.checkIsEmpty("Aktualne")
                 if self.name == "h":
-                        self.mylist = sortByPrice(MainWindow.th.h)
+                    self.mylist = sortByPrice(MainWindow.th.h)
+                    self.parent.checkIsEmpty("Historyczne")
                 if self.name == "s":
                     self.mylist = sortByPrice(MainWindow.th.s)
+                    self.parent.checkIsEmpty("Podejrzane")
             self.parent.addColumn0_8_9()
 
 #Okienko z wykresem
@@ -492,7 +523,6 @@ class AddWindow(QDialog):
         elif not self.checkTime(b):
             MessageWindow("czas")
         else:
-            #MessageWindow("ok1")
             url=re.sub('\'','',self.wpisz1.text())
             interval = int(self.wpisz2.text())
             result=self.upperWindow.th.add( url , interval  )
@@ -558,7 +588,6 @@ class MessageWindow(QMessageBox):
             msg.setText("Mecz został usunięty")
             msg.setStandardButtons(QMessageBox.Ok)
             msg.exec()
-
 
 
 if __name__ == '__main__':
