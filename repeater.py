@@ -21,12 +21,13 @@ class TimedScraper(Thread):
 
     def __new__(cls):
         if TimedScraper.__instance is None:
-            cls.__instance = Thread.__new__(cls)
-        return cls.__instance
+            TimedScraper.__instance = Thread.__new__(cls)
+        return TimedScraper.__instance
 
 
     def __init__(self):
         Thread.__init__(self,daemon=True)
+        print('init ' + str(id(self) ) )
         self.a = DataSourceActuall()
         self.h = DataSourceHistorical()
         self.s = DataSourceSuspicious()

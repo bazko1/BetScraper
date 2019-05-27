@@ -19,6 +19,7 @@ import multiprocessing
 import plot
 from repeater import TimedScraper
 
+global okno
 
 def getData(data):
     list1=data.get_data_just_names_and_dates()
@@ -46,7 +47,6 @@ def sortByPrice(data):
 
             k=0
             for j in listToShow:
-                print (j)
                 if j[6]!=None and tmp[6]!=None:#gdy mozliwe remisy
                     if max(j[4], j[5],j[6]) < max(tmp[4], tmp[5],tmp[6]):
                         break
@@ -69,17 +69,17 @@ def sortByPrice(data):
 
 
 class MainWindow(QWidget):
-    th = TimedScraper()
+    
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setFixedSize(900,600)
+        self.th = TimedScraper()
         self.interfejs()
 
     def addCall(self):
         AddWindow(self)
 
     def interfejs(self):
-
         layoutA=QVBoxLayout()
 
 
@@ -134,9 +134,9 @@ class MainWindow(QWidget):
 
     #Zakładki
         tab_widget = QTabWidget()
-        self.actual=MyTab("Aktualne")
-        self.historical=MyTab("Historyczne")
-        self.suspicious=MyTab("Podejrzane")
+        self.actual=MyTab("Aktualne",self)
+        self.historical=MyTab("Historyczne",self)
+        self.suspicious=MyTab("Podejrzane",self)
         tab_widget.addTab(self.actual, "Aktualne")
         tab_widget.addTab(self.suspicious, "Podejrzane")
         tab_widget.addTab(self.historical, "Historyczne")
@@ -193,11 +193,11 @@ class ResultCell(QWidget):
             MessageWindow("ok2")
             result = (self.table.mylist[self.index][0], self.table.mylist[self.index][2], self.table.mylist[self.index][3], self.result1.text(), self.result2.text())
             if self.name=="a":
-                MainWindow.th.a.insert_result(result)
+                okno.th.a.insert_result(result)
             if self.name=="h":
-                MainWindow.th.h.insert_result(result)
+                okno.th.h.insert_result(result)
             if self.name=="s":
-                MainWindow.th.s.insert_result(result)
+                okno.th.s.insert_result(result)
 
 #Pole 'Usun' w tablicach z meczami
 class Check(QWidget):
@@ -252,21 +252,22 @@ class RemoveWindow(QDialog):
         result = (self.parent.table.mylist[self.parent.index][2], self.parent.table.mylist[self.parent.index][3], self.parent.table.mylist[self.parent.index][0])
         if self.parent.name == "a":
             #remove from refresh list
-            MainWindow.th.removeFromQueue(result[0],result[1],result[2])
+            okno.th.removeFromQueue(result[0],result[1],result[2])
             #remove from database
-            MainWindow.th.a.delete_specific_data(result[0], result[1], result[2])
+            okno.th.a.delete_specific_data(result[0], result[1], result[2])
         if self.parent.name == "h":
-            MainWindow.th.h.delete_specific_data(result[0], result[1], result[2])
+            okno.th.h.delete_specific_data(result[0], result[1], result[2])
         if self.parent.name == "s":
-            MainWindow.th.removeFromQueue(result[0],result[1],result[2])
-            MainWindow.th.s.delete_specific_data(result[0], result[1], result[2])
+            okno.th.removeFromQueue(result[0],result[1],result[2])
+            okno.th.s.delete_specific_data(result[0], result[1], result[2])
         MessageWindow("usun")
         self.close()
 
 #Zakładki 'Aktualne', 'Podejrzane', 'Historyczne'
 class MyTab(QWidget):
-    def __init__(self, name):
+    def __init__(self, name,parent):
         super().__init__()
+        self.th = parent.th
         self.setWindowTitle(name)
         self.table_view=QTableView()
         self.table=self.addTable(name)
@@ -279,7 +280,6 @@ class MyTab(QWidget):
         self.layout2.addWidget(cb)
         self.layout2.addWidget(self.table_view)
         self.checkIsEmpty(name)
-        print (self.layout2.count())
         self.setLayout(self.layout2)
 
     def checkIsEmpty(self, name):
@@ -347,13 +347,13 @@ class MyTableModel(QAbstractTableModel):
         
         if (name=="Aktualne"):
             self.name="a"
-            self.mylist=getData(MainWindow.th.a)
+            self.mylist=getData(parent.th.a)
         if (name=="Historyczne"):
             self.name="h"
-            self.mylist=getData(MainWindow.th.h)
+            self.mylist=getData(parent.th.h)
         if (name=="Podejrzane"):
             self.name="s"
-            self.mylist=getData(MainWindow.th.s)
+            self.mylist=getData(parent.th.s)
 
     def rowCount(self,parent):
         return len(self.mylist)
@@ -409,33 +409,33 @@ class MyTableModel(QAbstractTableModel):
             self.endResetModel()
             if (i == 0):
                 if self.name=="a":
-                    self.mylist=getData(MainWindow.th.a)
+                    self.mylist=getData(okno.th.a)
                     self.parent.checkIsEmpty("Aktualne")
                 if self.name == "h":
-                    self.mylist=getData(MainWindow.th.h)
+                    self.mylist=getData(okno.th.h)
                     self.parent.checkIsEmpty("Historyczne")
                 if self.name == "s":
-                    self.mylist=getData(MainWindow.th.s)
+                    self.mylist=getData(okno.th.s)
                     self.parent.checkIsEmpty("Podejrzane")
             if (i == 1):
                 if self.name == "a":
-                    self.mylist = sortByDate(MainWindow.th.a)
+                    self.mylist = sortByDate(okno.th.a)
                     self.parent.checkIsEmpty("Aktualne")
                 if self.name == "h":
-                    self.mylist = sortByDate(MainWindow.th.h)
+                    self.mylist = sortByDate(okno.th.h)
                     self.parent.checkIsEmpty("Historyczne")
                 if self.name == "s":
-                    self.mylist = sortByDate(MainWindow.th.s)
+                    self.mylist = sortByDate(okno.th.s)
                     self.parent.checkIsEmpty("Podejrzane")
             if (i == 2):
                 if self.name == "a":
-                    self.mylist = sortByPrice(MainWindow.th.a)
+                    self.mylist = sortByPrice(okno.th.a)
                     self.parent.checkIsEmpty("Aktualne")
                 if self.name == "h":
-                    self.mylist = sortByPrice(MainWindow.th.h)
+                    self.mylist = sortByPrice(okno.th.h)
                     self.parent.checkIsEmpty("Historyczne")
                 if self.name == "s":
-                    self.mylist = sortByPrice(MainWindow.th.s)
+                    self.mylist = sortByPrice(okno.th.s)
                     self.parent.checkIsEmpty("Podejrzane")
             self.parent.addColumn0_8_9()
 
@@ -452,8 +452,8 @@ class Plot():
         #print(self.table)
         #print ("Rysuje wykres dla danych " , self.date ,self.home , self.away)
         #betData = [host,away,draw]
-        betData = MainWindow.th.a.get_all_BetValues(self.home,self.away,self.date)
-        dbResult = MainWindow.th.a.get_result(self.home,self.away,self.date)
+        betData = okno.th.a.get_all_BetValues(self.home,self.away,self.date)
+        dbResult = okno.th.a.get_result(self.home,self.away,self.date)
 
         if len(betData) > 0:
             if len( betData[0] ) == 3 and not None in betData[0]:
@@ -592,7 +592,6 @@ class MessageWindow(QMessageBox):
 
 if __name__ == '__main__':
     import sys
-
     app = QApplication(sys.argv)
     okno = MainWindow()
     sys.exit(app.exec_())
