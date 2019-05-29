@@ -31,6 +31,7 @@ class TimedScraper(Thread):
         self.a = DataSourceActuall()
         self.h = DataSourceHistorical()
         self.s = DataSourceSuspicious()
+        self.lastNotif = 0
         self.loadActuallUrls()
         
 
@@ -189,5 +190,9 @@ class TimedScraper(Thread):
             self.a.set_data_suspicious(host,away,date)
             
             #and put message with information
-            MessageWindow("nowy")
-        
+            
+            if self.lastNotif == 0:
+                MessageWindow("nowy")
+                self.lastNotif = 4
+            else:
+                self.lastNotif-=1
