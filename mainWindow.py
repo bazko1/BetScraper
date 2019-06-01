@@ -310,7 +310,7 @@ class MyTab(QWidget):
     def addColumn0_8_9(self):
         ile=self.table_model.rowCount(self)
         for i in range(0, ile):
-            self.table_view.setIndexWidget(self.table_model.index(i, 9), ShowButton(i,self.table_model) )
+            self.table_view.setIndexWidget(self.table_model.index(i, 9), ShowButton(i,self.table_model,self.th) )
             self.table_view.setIndexWidget(self.table_model.index(i, 8), ResultCell(self.table_model, i, self.table_model.name))
             self.table_view.setIndexWidget(self.table_model.index(i,0), Check(self.table_model, i, self.table_model.name))
 
@@ -324,16 +324,18 @@ class MyTab(QWidget):
 
 #Przycisk 'Pokaz wykres'
 class ShowButton(QPushButton):
-    def __init__(self,id,table):
+    def __init__(self,id,table,th):
         super(ShowButton,self).__init__("Pokaż wykres")
         self.setStyleSheet("background-color: beige;border-color: beige")
         self.id = id
         self.table = table
+        self.th = th
         self.clicked.connect(self.showPlot )
         
 
     def showPlot(self):
-        Args=( self.table.mylist[self.id][0], self.table.mylist[self.id][2], self.table.mylist[self.id][3])
+        global okno
+        Args=( self.table.mylist[self.id][0], self.table.mylist[self.id][2], self.table.mylist[self.id][3],self.th)
         multiprocessing.Process(target=Plot , args=Args , daemon=True).start()
         
 
@@ -441,19 +443,17 @@ class MyTableModel(QAbstractTableModel):
 
 #Okienko z wykresem
 class Plot():
-    def __init__(self,date,home,away):
+    def __init__(self,date,home,away,th):
         self.date = date
         self.home = home
         self.away = away
+        self.th = th
         self.makePlot()
 
     def makePlot(self):
-        #print( dir(self.table) )
-        #print(self.table)
-        #print ("Rysuje wykres dla danych " , self.date ,self.home , self.away)
-        #betData = [host,away,draw]
-        betData = okno.th.a.get_all_BetValues(self.home,self.away,self.date)
-        dbResult = okno.th.a.get_result(self.home,self.away,self.date)
+        
+        betData = self.th.a.get_all_BetValues(self.home,self.away,self.date)
+        dbResult = self.th.a.get_result(self.home,self.away,self.date)
 
         if len(betData) > 0:
             if len( betData[0] ) == 3 and not None in betData[0]:
@@ -466,17 +466,6 @@ class Plot():
                 winA = list ( map (lambda x : x[1] ,betData) )
                 plot.create_plot(self.home , self.away ,winH , winA ,result=dbResult  )
             
-
-
-    def showPlot(self):
-        self.setWindowTitle("Wykres kursów")
-        self.setWindowModality(Qt.ApplicationModal)
-        self.setAutoFillBackground(True)
-        p = self.palette()
-        p.setColor(self.backgroundRole(), QColor(255, 165, 0))
-        self.setPalette(p)
-        self.makePlot()
-        self.exec()
 
 
 
