@@ -334,8 +334,10 @@ class ShowButton(QPushButton):
         
 
     def showPlot(self):
-        global okno
-        Args=( self.table.mylist[self.id][0], self.table.mylist[self.id][2], self.table.mylist[self.id][3],self.th)
+        date,home,away = self.table.mylist[self.id][0], self.table.mylist[self.id][2], self.table.mylist[self.id][3]
+        betData = self.th.a.get_all_BetValues(home,away,date)
+        dbResult = self.th.a.get_result(home,away,date)
+        Args=(home,away,betData,dbResult)
         multiprocessing.Process(target=Plot , args=Args , daemon=True).start()
         
 
@@ -443,28 +445,20 @@ class MyTableModel(QAbstractTableModel):
 
 #Okienko z wykresem
 class Plot():
-    def __init__(self,date,home,away,th):
-        self.date = date
-        self.home = home
-        self.away = away
-        self.th = th
-        self.makePlot()
+    def __init__(self,home,away,betData,dbResult):
+        self.makePlot(home,away,betData,dbResult)
 
-    def makePlot(self):
-        
-        betData = self.th.a.get_all_BetValues(self.home,self.away,self.date)
-        dbResult = self.th.a.get_result(self.home,self.away,self.date)
-
+    def makePlot(self,home,away,betData,dbResult):
         if len(betData) > 0:
             if len( betData[0] ) == 3 and not None in betData[0]:
                 winH = list ( map (lambda x : x[0] ,betData) )
                 remisX = list ( map (lambda x : x[2] ,betData) )
                 winA = list ( map (lambda x : x[1] ,betData) )
-                plot.create_plot(self.home , self.away ,winH , winA , remisX , result=dbResult )
+                plot.create_plot(home , away ,winH , winA , remisX , result=dbResult )
             elif len( betData[0] ) == 2 or None in betData[0]:
                 winH = list ( map (lambda x : x[0] ,betData) )
                 winA = list ( map (lambda x : x[1] ,betData) )
-                plot.create_plot(self.home , self.away ,winH , winA ,result=dbResult  )
+                plot.create_plot(home , away ,winH , winA ,result=dbResult  )
             
 
 

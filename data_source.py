@@ -174,12 +174,12 @@ class DataSource(object):
 
     'zwraca bety w kolejności pobierania'
     def get_all_BetValues(self,host,away,date):
-        self.c = self.conn.cursor()
-        self.c.execute('SELECT OddForHost,OddForAway,OddForDraw from Odds WHERE DateOfMatch=? and Host=? and Away=?',
+        c = self.conn.cursor()
+        c.execute('SELECT OddForHost,OddForAway,OddForDraw from Odds WHERE DateOfMatch=? and Host=? and Away=?',
         (date,host,away)
         )
-        o = self.c.fetchall()
-        self.c.close()
+        o = c.fetchall()
+        c.close()
         return o
 
     'zwraca link dla konkretnego meczu'
