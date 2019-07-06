@@ -6,7 +6,7 @@ import repeater
 import scraper
 from unittest.mock import patch
 
-#to run this tests python3 tests.py
+#to run this tests, enter this folder, python3 tests.py
 
 class TestRepeater(unittest.TestCase):
 
@@ -22,7 +22,10 @@ class TestRepeater(unittest.TestCase):
         
         pass
     
-    'Call update once with some object in bets array and check if they behave correctly'
+    '''
+    Test for Update function from TimedScraper()
+    Call update once with some object in bets array and check if they behave correctly
+    '''
     def test01_Check_Update_Call_Once(self):
         #mocking in such way that neither db or internet is needed in this test
         def notifyMock(o,data):
@@ -45,7 +48,9 @@ class TestRepeater(unittest.TestCase):
 
             self.assertTrue( self.scraper.bets[0][2] == 0 and self.scraper.bets[1][2] == 1 , 'Incorrect incrementation of time'  )
             
-    
+    def test02_Check_add_Function(self):
+        pass
+
         
     def tearDown(self):
         print('tests passed')
