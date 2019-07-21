@@ -110,9 +110,16 @@ class MainWindow(QWidget):
         odswiezBtn.setStyleSheet("font: bold; color: dark blue; background-color: white; border-color: beige")
         odswiezBtn.clicked.connect(self.refresh)
 
+        mailBtn = QPushButton("Dodaj email", self)
+        mailBtn.setMaximumWidth(200)
+        mailBtn.setStyleSheet("font: bold; color: dark blue; background-color: white; border-color: beige")
+        mailBtn.clicked.connect(self.addMail)
+
+
         btnGroup = QVBoxLayout()
         btnGroup.addWidget(dodajBtn)
         btnGroup.addWidget(odswiezBtn)
+        btnGroup.addWidget(mailBtn)
         btnGroup.addWidget(koniecBtn)
         btnGroup.setSpacing(0)
 
@@ -156,6 +163,43 @@ class MainWindow(QWidget):
         self.actual.table_model.selectionchange(0)
         self.suspicious.table_model.selectionchange(0)
         self.historical.table_model.selectionchange(0)
+    
+    def addMail(self):
+        def handleEmailText():
+            #TODO: Add check if it looks like email
+            email = wpisz1.text()
+            if email == "":
+                MessageWindow("mailFAILURE")    
+            else:
+                self.th.ud.addEmail(email)
+                MessageWindow("mailOK")
+                dialog.close()
+            
+            
+    
+        dialog = QDialog()
+        dialog.setWindowTitle("Dodaj email")
+        dialog.setWindowModality(Qt.ApplicationModal)
+        p = dialog.palette()
+        p.setColor(dialog.backgroundRole(), QColor(255, 165, 0))
+        dialog.setPalette(p)
+        layout1 = QVBoxLayout()
+        okBtn = QPushButton("DODAJ")
+        anulujBtn = QPushButton("ANULUJ")
+        wpisz1 = QLineEdit()
+        tekst1 = QLabel("Podaj email:")
+        layout1.addWidget(tekst1)
+        layout1.addWidget(wpisz1)
+        layout1.addWidget(okBtn)
+        layout1.addWidget(anulujBtn)
+        buttonBox = QDialogButtonBox()
+        okBtn.clicked.connect( handleEmailText )
+        anulujBtn.clicked.connect(dialog.close)
+        layout1.addWidget(buttonBox)
+        dialog.setLayout(layout1)
+        dialog.exec_()
+        pass
+
 
 #Pole do wpisania wyniku
 class ResultCell(QWidget):
@@ -571,6 +615,18 @@ class MessageWindow(QMessageBox):
             msg.setText("Mecz został usunięty")
             msg.setStandardButtons(QMessageBox.Ok)
             msg.exec()
+        if str=="mailOK":
+            msg.setIcon(QMessageBox.Information)
+            msg.setText("Email dodany")
+            msg.setStandardButtons(QMessageBox.Ok)
+            msg.exec()
+        
+        if str=="mailFAILURE":
+            msg.setIcon(QMessageBox.Critical)
+            msg.setText("Niepoprawny email")
+            msg.setStandardButtons(QMessageBox.Ok)
+            msg.exec()
+
 
 
 if __name__ == '__main__':

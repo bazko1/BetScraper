@@ -32,14 +32,14 @@ Returns [dateOfMatch,startTime,Host,Away,OddForHost,OddForAway] if match cannot 
 (Error,url) - if there was any exception during scraping process thrown.
 '''
 def getData(url):
-        out = None
-
-        try :
-                out = list( match_scraper(url) )
-                out[0]=out[0].replace('.','-')
-                
-        except Exception as e: 
-                print('scraper.py : ' + str(e))
-                out = ('Error',url)
-        return out
+    out = None
+    
+    try :
+            out = list( match_scraper(url) )
+            out[0]=out[0].replace('.','-')
+            
+    except Exception as e: 
+            print('scraper.py : ' + str(e))
+            out = ('Error',url)
+    return out
 

@@ -1,3 +1,4 @@
+
 from data_source import DataSource
 
 class DataSourceActuall(DataSource):
@@ -105,3 +106,22 @@ class DataSourceActuall(DataSource):
         c.close()
         return o
 
+class UserData():
+    def __init__(self):
+        pass
+    
+    def addEmail(self,email):
+        f = open('data/email','w')
+        f.write(email)
+        pass
+
+    def getEmail(self):
+        out = None
+        try:
+            f = open('data/email','r')
+            out = f.read()
+        except FileNotFoundError:
+            pass
+            
+        return out
+        

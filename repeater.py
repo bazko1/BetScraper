@@ -2,11 +2,11 @@ import scraper
 from threading import Thread
 import time
 import os
-from data_source_actuall import DataSourceActuall
+from data_source_actuall import DataSourceActuall,UserData
 from data_source_historical import DataSourceHistorical
 from data_source_suspicious import DataSourceSuspicious
 import datetime
-
+import mail
 
 class TimedScraper(Thread):
 
@@ -31,6 +31,7 @@ class TimedScraper(Thread):
         self.a = DataSourceActuall()
         self.h = DataSourceHistorical()
         self.s = DataSourceSuspicious()
+        self.ud = UserData()
         self.lastNotif = 0
         self.loadActuallUrls()
         
@@ -166,7 +167,7 @@ class TimedScraper(Thread):
         
         #check if match already is in suspicious
         check = self.s.get_parametr_data_new(host,away,date)
-        if  check != None and len(check) > 0:
+        if check != None and len(check) > 0:
             return True
         
         #take last 2 matches from db 
@@ -193,6 +194,24 @@ class TimedScraper(Thread):
             
             if self.lastNotif == 0:
                 MessageWindow("nowy")
+                #TODO: send mail with info
+                self.sendMail(host,away,date,last,prev)
+                
+
                 self.lastNotif = 4
             else:
                 self.lastNotif-=1
+
+    def sendMail(self,host,away,date,newBet,prevBet):
+        email = self.ud.getEmail()
+        if not email:
+            return
+        print('sending email to : ' + email )
+        title = 'Values for match %s vs %s ( %s  ) changed' % (host ,away ,date)
+        msg = '<b>Higher than 10%% increase<br> Last taken data:</b><br><p>Host : %.2f &rarr; %.2f<br>Away : %.2f &rarr; %.2f </p>' % (prevBet[0],newBet[0],prevBet[1],newBet[1])
+        try:
+            mail.send_mail('scraperbet@gmail.com',email,title,msg)
+        except Exception as e:
+            print('Failed to send email : ' + str(e) )
+
+        pass
